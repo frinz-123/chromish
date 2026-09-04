@@ -16,6 +16,9 @@ const performanceModel = {
     rendererTechnique: {
       exportRenderer: "webgpu",
       fidelityRisks: [
+        "Optical transmission uses a full-resolution rasterized exit-normal prepass and fixed-count refraction, not per-triangle path tracing.",
+        "Diamond's exact outer outline surrounds distance-contour insets; thin regions can have a smaller table.",
+        "Fire uses periodic geometric tongue deformation with a local soft-edge composite, not a fluid simulation.",
         "Browser alpha tracing approximates SVG filters, fonts, strokes, masks, and clip paths.",
         "The portable GLB material cannot reproduce the procedural vgpu reflection shader exactly.",
       ],
@@ -47,6 +50,7 @@ const performanceModel = {
         },
       ],
       performanceRisks: [
+        "Smooth, cut and refined Fire meshes are cached per source; material changes and playback never rebuild their topology. Fire refinement preserves original triangles within the 100,000-triangle ceiling.",
         "Fine alpha tracing and bevel generation can approach the enforced 100,000-triangle limit.",
         "8K image and 4K video exports require deterministic tiled rendering and GPU readback.",
       ],

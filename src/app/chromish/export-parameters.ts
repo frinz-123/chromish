@@ -2,6 +2,7 @@ import type { ToolcraftState } from "@/toolcraft/runtime";
 import { readToolcraftOrientationPose } from "@/toolcraft/runtime/react";
 
 import { chromishTargets } from "./control-sections";
+import { readCustomization } from "./customization";
 import { safeCameraVector, type ChromishRenderParameters } from "./vgpu-renderer";
 
 function numberValue(state: Readonly<ToolcraftState>, target: string, fallback: number): number {
@@ -23,6 +24,7 @@ export function getChromishExportParameters(
   const startAngle = numberValue(state, chromishTargets.startAngle, -65);
   const direction = stringValue(state, chromishTargets.direction, "clockwise") === "counterclockwise" ? -1 : 1;
   return {
+    ...readCustomization(state.values, stringValue(state, chromishTargets.material, "chrome") as ChromishRenderParameters["material"]),
     background: stringValue(state, chromishTargets.background, "#F7F7F5"),
     backgroundImageSize: liveParameters?.backgroundImageSize ?? [1, 1],
     cameraPosition: safeCameraVector(orbit.position, [0.15, 0.1, 4.5]),

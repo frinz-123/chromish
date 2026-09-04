@@ -4,6 +4,7 @@ import {
 } from "@/toolcraft/runtime";
 
 import type { ChromishCpuMesh } from "./svg-mesh";
+import { customizationTargets } from "./customization";
 
 export type ChromishMeshResource = Readonly<{
   indexCount: number;
@@ -63,8 +64,10 @@ export const rendererPipelineRegistration =
           frequency: "frame",
           relationship: "quadratic",
         },
+        // Optical modes include the retained exit-normal raster pass here;
+        // both passes share this stage's inputs, lifecycle and invalidation.
         id: "chrome-hdr",
-        inputs: ["svg-extrusion", "media.backgroundImage", "material.*", "chrome.*", "view.orbit", "motion.*", "timeline", "canvas.renderScale"],
+        inputs: ["svg-extrusion", "media.backgroundImage", "material.*", "chrome.*", "composition.*", "view.orbit", "motion.*", "timeline", "canvas.renderScale"],
         invalidatedBy: ["initial-render", "control-change", "control-drag", "animation-frame", "timeline-playback", "timeline-scrub", "viewport-drag", "viewport-zoom"],
         kind: "rasterize",
         lifecycle: { cache: "retained-resource", resourceScope: "renderer" },
@@ -80,7 +83,7 @@ export const rendererPipelineRegistration =
           relationship: "quadratic",
         },
         id: "tone-map",
-        inputs: ["chrome-hdr", "chrome.exposure", "appearance.background", "export.includeBackground"],
+        inputs: ["chrome-hdr", "material.type", "material.fire.glow", "composition.saturation", "timeline", "chrome.exposure", "appearance.background", "export.includeBackground"],
         invalidatedBy: ["initial-render", "control-change", "control-drag", "animation-frame", "timeline-playback", "timeline-scrub", "viewport-drag", "viewport-zoom"],
         kind: "composite",
         lifecycle: { cache: "retained-resource", resourceScope: "renderer" },
@@ -106,6 +109,8 @@ export const rendererPipelineRegistration =
       },
     ],
     interactionInvalidation: [
+      { interaction: "control-change", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: customizationTargets },
+      { interaction: "control-drag", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: customizationTargets },
       { interaction: "initial-render", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["canvas"] },
       { interaction: "media-import", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["media.svgSource"] },
       { interaction: "media-import", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["media.backgroundImage"] },
@@ -113,8 +118,8 @@ export const rendererPipelineRegistration =
       { interaction: "control-drag", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["geometry.depth", "geometry.bevel"] },
       { interaction: "control-change", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["material.type", "material.primaryColor", "material.secondaryColor", "chrome.roughness", "chrome.reflectionContrast", "chrome.studioRotation", "chrome.exposure", "motion.direction", "motion.startAngle", "view.orbit", "appearance.background", "export.includeBackground"] },
       { interaction: "control-drag", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["chrome.roughness", "chrome.reflectionContrast", "chrome.studioRotation", "chrome.exposure", "motion.startAngle", "view.orbit"] },
-      { interaction: "timeline-playback", invalidates: ["tone-map"], mustNotInvalidate: ["svg-extrusion", "chrome-hdr"], targets: ["timeline"] },
-      { interaction: "timeline-scrub", invalidates: ["tone-map"], mustNotInvalidate: ["svg-extrusion", "chrome-hdr"], targets: ["timeline"] },
+      { interaction: "timeline-playback", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["timeline"] },
+      { interaction: "timeline-scrub", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["timeline"] },
       { interaction: "viewport-drag", invalidates: ["tone-map"], mustNotInvalidate: ["svg-extrusion", "chrome-hdr"], targets: ["view.orbit"] },
       { interaction: "viewport-zoom", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["canvas.zoom", "canvas.renderScale"] },
       { interaction: "export", invalidates: ["export-readback"], mustNotInvalidate: ["svg-extrusion"], targets: ["export.image", "export.video"] },

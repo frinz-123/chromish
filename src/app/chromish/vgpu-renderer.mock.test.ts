@@ -9,26 +9,29 @@ import {
   target,
 } from "vgpu/mock";
 
-import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL, chromishFireLoopOffset, chromishMaterialIndex } from "./vgpu-renderer";
+import {
+  CHROME_SHADER_WGSL,
+  CHROMISH_BACKGROUND_IMAGE_TEXTURE_USAGE,
+  TONE_MAP_SHADER_WGSL,
+  chromishMaterialIndex,
+} from "./vgpu-renderer";
 
 describe("Chromish vgpu bindings", () => {
+  it("allocates uploaded image textures for external-image transfer and shader sampling", () => {
+    expect(CHROMISH_BACKGROUND_IMAGE_TEXTURE_USAGE).toEqual([
+      "copy_dst",
+      "render_attachment",
+      "texture_binding",
+    ]);
+  });
+
   it("maps every selectable material to a stable WGSL branch", () => {
     expect(["chrome", "diamond", "plastic", "glass", "fire", "playdough"].map((material) =>
       chromishMaterialIndex(material as Parameters<typeof chromishMaterialIndex>[0]),
     )).toEqual([0, 1, 2, 3, 4, 5]);
-    expect(CHROME_SHADER_WGSL).toContain("1.0 / 2.42");
-    expect(CHROME_SHADER_WGSL).toContain("1.0 / 1.52");
-    expect(CHROME_SHADER_WGSL).toContain("fireNoise");
-    expect(CHROME_SHADER_WGSL).toContain("let metal = softened * tint");
-  });
-
-  it("stitches the fire turbulence phase at the forward timeline seam", () => {
-    const start = chromishFireLoopOffset(0);
-    const end = chromishFireLoopOffset(Math.PI * 2);
-    expect(end[0]).toBeCloseTo(start[0], 12);
-    expect(end[1]).toBeCloseTo(start[1], 12);
-    expect(end[2]).toBeCloseTo(start[2], 12);
-    expect(CHROME_SHADER_WGSL).toContain("sin(time * 2.0)");
+    expect(CHROME_SHADER_WGSL).toContain("shadeOptical(input, true)");
+    expect(TONE_MAP_SHADER_WGSL).toContain("composeFire");
+    expect(CHROME_SHADER_WGSL).toContain("chromeEnvironment(reflect(-v, brushedNormal)");
   });
 
   it("compiles and executes the exact HDR, depth, MSAA, and tone-map passes", async () => {
@@ -50,15 +53,18 @@ describe("Chromish vgpu bindings", () => {
       depth: { compare: "less-equal", write: true },
       geometry: mesh,
       shader: CHROME_SHADER_WGSL,
-      set: { backgroundSampler, backgroundTexture: background },
+      set: { backgroundSampler, backgroundTexture: background, exitTexture: background },
     });
     const identity = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
     chrome.set({
       scene: {
+        backgroundColorAndMode: [0.93, 0.93, 0.91, 0],
         cameraPosition: [0, 0, 4.5, 1],
         backgroundInfo: [32, 24, 1, 1],
         backgroundTile: [0, 0, 1, 1],
         controls: [1.25, 0.31, 0, 0],
+        materialSettings: [1, 0.15, 0, 0.7],
+        optics: [0.3, 0, 0, 0],
         model: identity,
         secondaryColor: [1, 0.65, 0.02, 1],
         tile: [0, 0, 1, 1],
@@ -77,6 +83,7 @@ describe("Chromish vgpu bindings", () => {
           backgroundInfo: [32, 24, 1, 1],
           backgroundTile: [0, 0, 1, 1],
           exposureAndMode: [1, 1, 0, 0],
+          fireInfo: [0, 1, 0, 0],
         },
       },
     });
@@ -84,7 +91,9 @@ describe("Chromish vgpu bindings", () => {
     await chrome.compile(hdr);
     await tone.compile(ldr);
     frame(gpu, (current) => {
-      current.pass({ clear: [0, 0, 0, 0], clearDepth: 1, target: hdr }, chrome);
+      current.pass({ clear: [0, 0, 0, 0], clearDepth: 1, target: hdr }, (pass) => {
+        pass.draw(chrome);
+      });
       current.pass({ clear: [0, 0, 0, 0], target: ldr }, tone);
     });
     await gpu.settled();

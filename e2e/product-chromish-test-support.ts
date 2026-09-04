@@ -91,15 +91,15 @@ export async function chooseSegment(page: Page, target: string, label: string): 
 export async function chooseSelect(page: Page, target: string, label: string): Promise<void> {
   const combobox = control(page, target).getByRole("combobox");
   await combobox.click();
-  const option = page.locator('[role="option"]').filter({ hasText: new RegExp(`^${label}$`, "u") });
+  const option = page.locator('[role="option"]').filter({ hasText: new RegExp(`^${label}$`, "iu") });
   await expect(option).toBeVisible();
   await option.click();
-  await expect(combobox).toContainText(label);
+  await expect(combobox).toContainText(new RegExp(label, "iu"));
 }
 
 export async function chooseSelectInField(field: Locator, page: Page, label: string): Promise<void> {
   await field.getByRole("combobox").click();
-  await page.locator('[role="option"]').filter({ hasText: new RegExp(`^${label}$`, "u") }).click();
+  await page.locator('[role="option"]').filter({ hasText: new RegExp(`^${label}$`, "iu") }).click();
 }
 
 export async function setSwitch(page: Page, target: string, checked: boolean): Promise<void> {
@@ -141,7 +141,11 @@ export async function downloadFrom(page: Page, buttonName: string | RegExp): Pro
 
 export async function withGpuPage<T>(hostPage: Page, run: (page: Page) => Promise<T>): Promise<T> {
   await openChromish(hostPage);
-  const browser = await chromium.launch({ args: ["--enable-unsafe-webgpu", "--use-angle=swiftshader"], headless: true });
+  const browser = await chromium.launch({
+    args: ["--enable-gpu", "--enable-unsafe-webgpu"],
+    channel: "chromium",
+    headless: true,
+  });
   const page = await browser.newPage({ acceptDownloads: true, viewport: { height: 720, width: 1280 } });
   try {
     await page.addInitScript(() => {
@@ -153,6 +157,69 @@ export async function withGpuPage<T>(hostPage: Page, run: (page: Page) => Promis
   } finally {
     await browser.close();
   }
+}
+
+export async function observeChromishCanvasRaster(page: Page, probeSize = 32): Promise<Readonly<{
+  averageRgb: readonly [number, number, number];
+  chromaticRatio: number;
+  darkRatio: number;
+  hash: string;
+  luminanceStdDev: number;
+  nonBlackRatio: number;
+  warmRatio: number;
+}>> {
+  const screenshot = await page.locator(canvasSelector).screenshot({ animations: "disabled" });
+  return page.evaluate(async ({ source, probeSize }) => {
+    const bitmap = await createImageBitmap(await (await fetch(source)).blob());
+    const probe = document.createElement("canvas");
+    probe.width = probeSize;
+    probe.height = probeSize;
+    const context = probe.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("A 2D canvas is required to inspect Chromish preview pixels.");
+    context.drawImage(bitmap, 0, 0, probe.width, probe.height);
+    bitmap.close();
+    const pixels = context.getImageData(0, 0, probe.width, probe.height).data;
+    let blue = 0;
+    let chromatic = 0;
+    let dark = 0;
+    let green = 0;
+    let hash = 2166136261;
+    let luminance = 0;
+    let luminanceSquared = 0;
+    let nonBlack = 0;
+    let red = 0;
+    let warm = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const pixelRed = pixels[index]!;
+      const pixelGreen = pixels[index + 1]!;
+      const pixelBlue = pixels[index + 2]!;
+      const pixelLuminance = pixelRed * 0.2126 + pixelGreen * 0.7152 + pixelBlue * 0.0722;
+      red += pixelRed;
+      green += pixelGreen;
+      blue += pixelBlue;
+      luminance += pixelLuminance;
+      luminanceSquared += pixelLuminance * pixelLuminance;
+      if (pixelRed + pixelGreen + pixelBlue > 30) nonBlack += 1;
+      if (pixelLuminance < 45) dark += 1;
+      if (Math.max(pixelRed, pixelGreen, pixelBlue) - Math.min(pixelRed, pixelGreen, pixelBlue) > 48) chromatic += 1;
+      if (pixelRed > 90 && pixelRed > pixelGreen * 1.28 && pixelGreen > pixelBlue * 1.45) warm += 1;
+      for (let channel = 0; channel < 4; channel += 1) {
+        hash ^= pixels[index + channel]!;
+        hash = Math.imul(hash, 16777619);
+      }
+    }
+    const pixelCount = probe.width * probe.height;
+    const meanLuminance = luminance / pixelCount;
+    return {
+      averageRgb: [red, green, blue].map((value) => Math.round(value / pixelCount)) as [number, number, number],
+      chromaticRatio: chromatic / pixelCount,
+      darkRatio: dark / pixelCount,
+      hash: (hash >>> 0).toString(16).padStart(8, "0"),
+      luminanceStdDev: Math.sqrt(Math.max(0, luminanceSquared / pixelCount - meanLuminance * meanLuminance)),
+      nonBlackRatio: nonBlack / pixelCount,
+      warmRatio: warm / pixelCount,
+    };
+  }, { source: `data:image/png;base64,${screenshot.toString("base64")}`, probeSize });
 }
 
 export async function prepareGpuPage(page: Page): Promise<void> {
@@ -224,7 +291,8 @@ export function applicabilityCases(target: string): readonly ToolcraftControlApp
     "material.primaryColor": ["chrome", "plastic", "fire", "playdough"],
     "material.secondaryColor": ["plastic", "fire"],
   };
-  const visibleMaterials = materialVisibility[target];
+  const materialSpecific = /^material\.(chrome|diamond|plastic|glass|fire|playdough)\./u.exec(target)?.[1];
+  const visibleMaterials = materialVisibility[target] ?? (materialSpecific ? [materialSpecific] : undefined);
   if (visibleMaterials) {
     return [
       ["Chrome", "chrome"],
@@ -296,6 +364,7 @@ export async function proveApplicabilityControlChange(
   baseRequirementId: string,
   applicabilityCase: ToolcraftControlApplicabilityCase,
   run: (field: Locator, currentPage: Page) => Promise<void>,
+  probeSelector?: string,
 ): Promise<void> {
   const session = await createProofSession(page);
   await selectApplicabilityCase(session, applicabilityCase, baseRequirementId);
@@ -304,9 +373,9 @@ export async function proveApplicabilityControlChange(
     session.controlAction(target, run),
     {
       requirementId: applicabilityRequirementId(baseRequirementId, applicabilityCase),
-      selector: target === "appearance.background"
+      selector: probeSelector ?? (target === "appearance.background"
         ? `[data-toolcraft-control-target="${target}"] input[type="text"]`
-        : `[data-toolcraft-control-target="${target}"] [data-slot="field"]`,
+        : `[data-toolcraft-control-target="${target}"] [data-slot="field"]`),
       stabilityIntervalMs: 20,
       stabilitySamples: 2,
       timeoutMs: 10_000,

@@ -1,4 +1,5 @@
 import type { ToolcraftControlSectionSchema } from "@/toolcraft/runtime";
+import { compositionKnobs, materialKnobs, materialKnobTarget, materialNames, materialTitles } from "./customization";
 
 export const chromishTargets = {
   background: "appearance.background",
@@ -217,6 +218,25 @@ export const chromishControlSections = [
     },
     id: "material",
     title: "Material",
+  },
+  ...materialNames.map((material) => ({
+    id: `material-${material}`,
+    title: materialTitles[material],
+    controls: Object.fromEntries(materialKnobs[material].map((item) => [item.key, {
+      ...item, type: "slider" as const, target: materialKnobTarget(material, item.key),
+      applicability: { mode: "conditional" as const, all: [{ target: chromishTargets.material, oneOf: [material] }] },
+      performanceRole: "responsiveness" as const,
+      performanceReason: "Updates retained material uniforms; source mesh and pass count stay unchanged.",
+      sliderValueKind: "continuous" as const,
+    }])),
+  })),
+  {
+    id: "composition", title: "Composition",
+    controls: Object.fromEntries(compositionKnobs.map((item) => [item.key, {
+      ...item, type: "slider" as const, target: `composition.${item.key}`, applicability: always,
+      performanceRole: "responsiveness" as const, performanceReason: "Updates transform or grading uniforms without rebuilding geometry.",
+      sliderValueKind: "continuous" as const,
+    }])),
   },
   {
     controls: {

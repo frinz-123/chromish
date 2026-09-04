@@ -19,148 +19,21 @@ import {
   type Surface,
   type Target,
 } from "vgpu";
-import type { Texture } from "vgpu/core";
+import { type Texture } from "vgpu/core";
+import { CHROME_SHADER_WGSL } from "./surface-shader";
+export { CHROME_SHADER_WGSL } from "./surface-shader";
+import { OPTICAL_EXIT_SHADER_WGSL } from "./optical-exit-shader";
+import { FIRE_NOISE_WGSL, FIRE_COMPOSITE_WGSL } from "./fire-shader";
+import { defaultMaterialSettings, type MaterialSettings } from "./customization";
 
 import type { ChromishCpuMesh } from "./svg-mesh";
 
-export const CHROME_SHADER_WGSL = /* wgsl */ `
-struct SceneUniforms {
-  viewProjection: mat4x4f,
-  model: mat4x4f,
-  tintRoughness: vec4f,
-  secondaryColor: vec4f,
-  controls: vec4f,
-  backgroundInfo: vec4f,
-  backgroundTile: vec4f,
-  cameraPosition: vec4f,
-  tile: vec4f,
-}
+export const CHROMISH_BACKGROUND_IMAGE_TEXTURE_USAGE = [
+  "copy_dst",
+  "render_attachment",
+  "texture_binding",
+] as const;
 
-@group(0) @binding(0) var<uniform> scene: SceneUniforms;
-@group(0) @binding(1) var backgroundTexture: texture_2d<f32>;
-@group(0) @binding(2) var backgroundSampler: sampler;
-
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) worldPosition: vec3f,
-  @location(1) worldNormal: vec3f,
-}
-
-@vertex fn vs_main(
-  @location(0) position: vec3f,
-  @location(1) normal: vec3f,
-) -> VertexOutput {
-  let world = scene.model * vec4f(position, 1.0);
-  let clip = scene.viewProjection * world;
-  let fullNdc = clip.xy / clip.w;
-  let localNdc = (fullNdc - scene.tile.xy) / scene.tile.zw;
-  var output: VertexOutput;
-  output.position = vec4f(localNdc * clip.w, clip.z, clip.w);
-  output.worldPosition = world.xyz;
-  output.worldNormal = normalize((scene.model * vec4f(normal, 0.0)).xyz);
-  return output;
-}
-
-fn rotateY(value: vec3f, angle: f32) -> vec3f {
-  let c = cos(angle);
-  let s = sin(angle);
-  return vec3f(c * value.x + s * value.z, value.y, -s * value.x + c * value.z);
-}
-
-fn studio(r: vec3f, contrast: f32, angle: f32) -> vec3f {
-  let q = rotateY(normalize(r), angle);
-  let azimuth = atan2(q.z, q.x);
-  let broad = 0.5 + 0.5 * sin(azimuth * 2.0 + q.y * 5.5);
-  let narrow = pow(0.5 + 0.5 * sin(azimuth * 5.0 - q.y * 8.0 + 0.7), 10.0);
-  let horizon = smoothstep(-0.28, 0.16, q.y) * (1.0 - smoothstep(0.48, 0.88, q.y));
-  let darkBand = smoothstep(0.12, 0.44, abs(sin(azimuth * 1.5 + 0.35)));
-  var value = mix(0.018, 1.7, broad);
-  value = mix(value, 3.6, narrow);
-  value += horizon * 0.75;
-  value *= mix(0.16, 1.0, darkBand);
-  value = mix(0.45, value, contrast);
-  return vec3f(value) * vec3f(0.94, 0.99, 1.03);
-}
-
-fn fireNoise(position: vec3f, time: f32) -> f32 {
-  let p = position * vec3f(5.0, 3.5, 4.0);
-  let loopOffset = vec3f(sin(time), cos(time), sin(time * 2.0));
-  let first = sin(p.x + loopOffset.x * 1.7) * sin(p.y * 1.7 + loopOffset.y * 1.3);
-  let second = sin(p.z * 2.3 - p.y * 1.2 + loopOffset.z * 1.1);
-  return 0.5 + 0.25 * first + 0.25 * second;
-}
-
-fn backgroundUv(fragmentPosition: vec2f) -> vec2f {
-  let tilePixels = scene.backgroundInfo.xy * scene.backgroundTile.zw;
-  let localUv = fragmentPosition / max(tilePixels, vec2f(1.0));
-  let fullUv = scene.backgroundTile.xy + localUv * scene.backgroundTile.zw;
-  let outputAspect = scene.backgroundInfo.x / max(scene.backgroundInfo.y, 1.0);
-  let imageAspect = scene.backgroundInfo.z / max(scene.backgroundInfo.w, 1.0);
-  var covered = fullUv;
-  if (imageAspect > outputAspect) {
-    let visible = outputAspect / imageAspect;
-    covered.x = 0.5 + (fullUv.x - 0.5) * visible;
-  } else {
-    let visible = imageAspect / outputAspect;
-    covered.y = 0.5 + (fullUv.y - 0.5) * visible;
-  }
-  return covered;
-}
-
-@fragment fn fs_main(input: VertexOutput) -> @location(0) vec4f {
-  let n = normalize(input.worldNormal);
-  let v = normalize(scene.cameraPosition.xyz - input.worldPosition);
-  let reflected = reflect(-v, n);
-  let roughness = scene.tintRoughness.w;
-  let contrast = scene.controls.x;
-  let studioAngle = scene.controls.y;
-  let tint = scene.tintRoughness.xyz;
-  let accent = scene.secondaryColor.xyz;
-  let material = scene.controls.z;
-  let time = scene.controls.w;
-  let environment = studio(reflected, contrast, studioAngle);
-  let fresnel = pow(1.0 - max(dot(n, v), 0.0), 5.0);
-  if (material < 0.5) {
-    let softened = mix(environment, vec3f(dot(environment, vec3f(0.2126, 0.7152, 0.0722))), roughness * 0.72);
-    let metal = softened * tint * mix(0.76, 1.34, fresnel);
-    let rim = fresnel * (1.2 - roughness) * tint;
-    return vec4f(metal + rim, 1.0);
-  }
-  if (material < 1.5) {
-    let refracted = refract(-v, n, 1.0 / 2.42);
-    let dispersion = vec3f(
-      studio(rotateY(refracted, -0.035), contrast, studioAngle).r,
-      studio(refracted, contrast, studioAngle).g,
-      studio(rotateY(refracted, 0.035), contrast, studioAngle).b
-    );
-    let brilliance = pow(max(dot(reflect(-v, n), normalize(vec3f(-0.4, 0.8, 0.5))), 0.0), 42.0);
-    let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.045).rgb;
-    return vec4f(mix(refractedBackdrop, dispersion, 0.28) + environment * fresnel * 1.2 + brilliance * vec3f(4.0), 0.3 + fresnel * 0.68);
-  }
-  if (material < 2.5) {
-    let light = normalize(vec3f(-0.45, 0.75, 0.6));
-    let diffuse = 0.24 + max(dot(n, light), 0.0) * 0.76;
-    let highlight = pow(max(dot(reflect(-light, n), v), 0.0), mix(96.0, 18.0, roughness));
-    return vec4f(tint * diffuse + accent * highlight * 1.8 + fresnel * accent * 0.35, 1.0);
-  }
-  if (material < 3.5) {
-    let refracted = refract(-v, n, 1.0 / 1.52);
-    let glassBody = studio(refracted, contrast * 0.75, studioAngle) * vec3f(0.7, 0.9, 1.0);
-    let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.025).rgb;
-    return vec4f(mix(refractedBackdrop, glassBody, 0.16) + environment * fresnel + vec3f(0.02, 0.05, 0.07), 0.16 + fresnel * 0.72);
-  }
-  if (material < 4.5) {
-    let turbulence = fireNoise(input.worldPosition, time);
-    let heightGlow = clamp(input.worldPosition.y * 0.35 + 0.58, 0.0, 1.0);
-    let flame = smoothstep(0.18, 0.88, turbulence + heightGlow * 0.35);
-    return vec4f(mix(tint, accent, flame) * (1.5 + flame * 2.2) + fresnel * accent, 0.9);
-  }
-  let light = normalize(vec3f(-0.35, 0.8, 0.45));
-  let wrap = clamp((dot(n, light) + 0.45) / 1.45, 0.0, 1.0);
-  let softSpecular = pow(max(dot(reflect(-light, n), v), 0.0), 12.0) * (1.0 - roughness);
-  return vec4f(tint * (0.42 + wrap * 0.72) + softSpecular * vec3f(0.35) + fresnel * tint * 0.2, 1.0);
-}
-`;
 
 export const TONE_MAP_SHADER_WGSL = /* wgsl */ `
 @group(0) @binding(0) var sceneTexture: texture_2d<f32>;
@@ -171,11 +44,15 @@ export const TONE_MAP_SHADER_WGSL = /* wgsl */ `
 struct ToneUniforms {
   background: vec4f,
   exposureAndMode: vec4f,
+  fireInfo: vec4f,
   backgroundInfo: vec4f,
   backgroundTile: vec4f,
 }
 
 @group(0) @binding(4) var<uniform> tone: ToneUniforms;
+
+${FIRE_NOISE_WGSL}
+${FIRE_COMPOSITE_WGSL}
 
 fn aces(value: vec3f) -> vec3f {
   let a = 2.51;
@@ -187,8 +64,10 @@ fn aces(value: vec3f) -> vec3f {
 }
 
 @fragment fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
-  let sampleValue = textureSampleLevel(sceneTexture, sceneSampler, uv, 0.0);
-  let mapped = aces(sampleValue.rgb * tone.exposureAndMode.x);
+  var sampleValue = textureSampleLevel(sceneTexture, sceneSampler, uv, 0.0);
+  if (tone.fireInfo.y > 0.5) { sampleValue = composeFire(uv, sampleValue); }
+  let exposed = aces(sampleValue.rgb * tone.exposureAndMode.x);
+  let mapped = max(mix(vec3f(dot(exposed, vec3f(0.2126, 0.7152, 0.0722))), exposed, tone.exposureAndMode.w), vec3f(0.0));
   let alpha = clamp(sampleValue.a, 0.0, 1.0);
   if (tone.exposureAndMode.y > 0.5) {
     var backdrop = tone.background.rgb;
@@ -211,6 +90,10 @@ fn aces(value: vec3f) -> vec3f {
 `;
 
 export type ChromishRenderParameters = Readonly<{
+  materialSettings?: MaterialSettings;
+  objectScale?: number;
+  fieldOfView?: number;
+  saturation?: number;
   background: string;
   backgroundImageSize: readonly [number, number];
   cameraPosition: readonly [number, number, number];
@@ -232,10 +115,6 @@ export function chromishMaterialIndex(material: ChromishRenderParameters["materi
   return { chrome: 0, diamond: 1, plastic: 2, glass: 3, fire: 4, playdough: 5 }[material];
 }
 
-export function chromishFireLoopOffset(phaseRadians: number): readonly [number, number, number] {
-  return [Math.sin(phaseRadians), Math.cos(phaseRadians), Math.sin(phaseRadians * 2)];
-}
-
 function hexToLinearRgba(value: string): [number, number, number, number] {
   const match = /^#?([0-9a-f]{6})$/iu.exec(value);
   if (!match) return [1, 1, 1, 1];
@@ -250,12 +129,13 @@ function matricesFor(
   height: number,
   parameters: ChromishRenderParameters,
 ): { camera: PerspectiveCamera; model: Matrix4; viewProjection: Matrix4 } {
-  const camera = new PerspectiveCamera(33, width / Math.max(1, height), 0.1, 100);
+  const camera = new PerspectiveCamera(parameters.fieldOfView ?? 33, width / Math.max(1, height), 0.1, 100);
   camera.position.fromArray(parameters.cameraPosition);
+  if (parameters.material === "fire") camera.position.multiplyScalar(1.16);
   camera.up.fromArray(parameters.cameraUp);
   camera.lookAt(0, 0, 0);
   camera.updateMatrixWorld(true);
-  const model = new Matrix4().makeRotationY(parameters.rotationRadians);
+  const model = new Matrix4().makeRotationY(parameters.rotationRadians).scale(new Vector3().setScalar(parameters.objectScale ?? 1));
   const viewProjection = new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   return { camera, model, viewProjection };
 }
@@ -286,6 +166,16 @@ export class ChromishVgpuRenderer {
   private backgroundTexture: Texture;
   private backgroundLoadGeneration = 0;
   private meshGeometry: Geometry | null = null;
+  private gemGeometry: Geometry | null = null;
+  private gemDraw: Draw | null = null;
+  private fireGeometry: Geometry | null = null;
+  private fireDraw: Draw | null = null;
+  private meshY: readonly [number, number] = [-1, 1];
+  private opticalDepth = 0.3;
+  private gemDepth = 0.3;
+  private readonly exitTarget: Target;
+  private smoothExitDraw: Draw | null = null;
+  private gemExitDraw: Draw | null = null;
   private chromeDraw: Draw | null = null;
   private disposed = false;
 
@@ -300,6 +190,7 @@ export class ChromishVgpuRenderer {
     backgroundTexture: Texture,
   ) {
     this.gpu = gpu;
+    this.exitTarget = target(gpu, { size: [1, 1], format: "rgba16float", depth: true, label: "chromish-optical-exit" });
     this.canvasSurface = canvasSurface;
     this.previewHdr = previewHdr;
     this.exportHdr = exportHdr;
@@ -312,6 +203,17 @@ export class ChromishVgpuRenderer {
   static async create(canvas: HTMLCanvasElement, size: readonly [number, number]): Promise<ChromishVgpuRenderer> {
     if (!("gpu" in navigator)) throw new Error("WebGPU is unavailable in this browser.");
     const gpu = await init({ label: "Chromish" });
+    if (import.meta.env.DEV) {
+      for (const [label, code] of [["surface", CHROME_SHADER_WGSL], ["composition", TONE_MAP_SHADER_WGSL]] as const) {
+        const diagnosticModule = gpu.gpu.createShaderModule({ code, label: `chromish-${label}-diagnostic-shader` });
+        const compilation = await diagnosticModule.getCompilationInfo();
+        for (const message of compilation.messages) {
+          if (message.type === "error") {
+            console.error(`Chromish ${label} WGSL ${message.lineNum}:${message.linePos}`, message.message);
+          }
+        }
+      }
+    }
     const canvasSurface = surface(gpu, canvas, {
       alphaMode: "premultiplied",
       autoResize: false,
@@ -354,12 +256,18 @@ export class ChromishVgpuRenderer {
         tone: {
           background: [0.93, 0.93, 0.91, 1],
           exposureAndMode: [1, 1, 0, 0],
+          fireInfo: [0, 0, 0, 0],
           backgroundInfo: [1, 1, 1, 1],
           backgroundTile: [0, 0, 1, 1],
         },
       },
     });
-    gpu.onError((error) => console.error("Chromish vgpu error", error));
+    gpu.onError((error) => {
+      const nativeMessage = typeof (error.cause as { message?: unknown } | undefined)?.message === "string"
+        ? (error.cause as { message: string }).message
+        : String(error.cause ?? "No native WebGPU diagnostic was provided.");
+      console.error("Chromish vgpu error", error, nativeMessage);
+    });
     await toneMap.compile(exportLdr);
     return new ChromishVgpuRenderer(gpu, canvasSurface, previewHdr, exportHdr, exportLdr, toneMap, backgroundSampler, backgroundTexture);
   }
@@ -369,10 +277,34 @@ export class ChromishVgpuRenderer {
   }
 
   setMesh(mesh: ChromishCpuMesh | null): void {
+    this.fireGeometry?.destroy();
+    this.fireGeometry = null;
+    this.fireDraw = null;
     this.meshGeometry?.destroy();
+    this.gemGeometry?.destroy();
+    this.gemGeometry = null;
+    this.gemDraw = null;
+    this.smoothExitDraw = null;
+    this.gemExitDraw = null;
     this.meshGeometry = null;
     this.chromeDraw = null;
     if (!mesh || this.disposed) return;
+    this.meshY = [mesh.bounds.min[1], mesh.bounds.max[1]];
+    if (mesh.fire) {
+      this.fireGeometry = geometry(this.gpu, {
+        buffers: [
+          { attributes: { position: "float32x3" }, data: Float32Array.from(mesh.fire.positions) },
+          { attributes: { normal: "float32x3" }, data: Float32Array.from(mesh.fire.normals) },
+        ], indices: Uint32Array.from(mesh.fire.indices), topology: "triangle-list",
+      });
+      this.fireDraw = draw(this.gpu, {
+        geometry: this.fireGeometry, shader: CHROME_SHADER_WGSL, cull: "none",
+        depth: { compare: "less-equal", write: true },
+        set: { backgroundSampler: this.backgroundSampler, backgroundTexture: this.backgroundTexture, exitTexture: this.exitTarget },
+      });
+      void this.fireDraw.compile(this.previewHdr);
+      void this.fireDraw.compile(this.exportHdr);
+    }
     this.meshGeometry = geometry(this.gpu, {
       buffers: [
         { attributes: { position: "float32x3" }, data: Float32Array.from(mesh.positions), label: "chromish-positions" },
@@ -382,6 +314,7 @@ export class ChromishVgpuRenderer {
       label: "chromish-object",
       topology: "triangle-list",
     });
+    this.opticalDepth = mesh.bounds.max[2] - mesh.bounds.min[2];
     this.chromeDraw = draw(this.gpu, {
       cull: "none",
       depth: { compare: "less-equal", write: true },
@@ -391,10 +324,47 @@ export class ChromishVgpuRenderer {
       set: {
         backgroundSampler: this.backgroundSampler,
         backgroundTexture: this.backgroundTexture,
+        exitTexture: this.exitTarget,
       },
     });
+    this.smoothExitDraw = this.makeExitDraw(this.meshGeometry);
     void this.chromeDraw.compile(this.previewHdr);
     void this.chromeDraw.compile(this.exportHdr);
+    if (mesh.gem) {
+      const gem = mesh.gem;
+      this.gemDepth = gem.bounds.max[2] - gem.bounds.min[2];
+      this.gemGeometry = geometry(this.gpu, {
+        buffers: [
+          { attributes: { position: "float32x3" }, data: Float32Array.from(gem.positions) },
+          { attributes: { normal: "float32x3" }, data: Float32Array.from(gem.normals) },
+        ],
+        indices: Uint32Array.from(gem.indices), topology: "triangle-list",
+      });
+      this.gemDraw = draw(this.gpu, {
+        geometry: this.gemGeometry, shader: CHROME_SHADER_WGSL, cull: "none",
+        depth: { compare: "less-equal", write: true },
+        set: { backgroundSampler: this.backgroundSampler, backgroundTexture: this.backgroundTexture, exitTexture: this.exitTarget },
+      });
+      this.gemExitDraw = this.makeExitDraw(this.gemGeometry);
+      void this.gemDraw.compile(this.previewHdr);
+      void this.gemDraw.compile(this.exportHdr);
+    }
+  }
+
+  private makeExitDraw(mesh: Geometry): Draw {
+    const result = draw(this.gpu, { geometry: mesh, shader: OPTICAL_EXIT_SHADER_WGSL, cull: "front", depth: { compare: "less-equal", write: true } });
+    void result.compile(this.exitTarget);
+    return result;
+  }
+
+  private selectedExitDraw(parameters: ChromishRenderParameters): Draw | null {
+    if (parameters.material === "diamond") return this.gemExitDraw ?? this.smoothExitDraw;
+    return parameters.material === "glass" ? this.smoothExitDraw : null;
+  }
+
+  private selectedDraw(parameters: ChromishRenderParameters): Draw | null {
+    if (parameters.material === "fire") return this.fireDraw ?? this.chromeDraw;
+    return parameters.material === "diamond" ? this.gemDraw ?? this.chromeDraw : this.chromeDraw;
   }
 
   async setBackgroundImage(
@@ -414,6 +384,8 @@ export class ChromishVgpuRenderer {
       const previous = this.backgroundTexture;
       this.backgroundTexture = nextTexture;
       this.chromeDraw?.set({ backgroundTexture: nextTexture });
+      this.gemDraw?.set({ backgroundTexture: nextTexture });
+      this.fireDraw?.set({ backgroundTexture: nextTexture });
       this.toneMap.set({ backgroundTexture: nextTexture });
       previous.destroy();
       return [1, 1];
@@ -437,7 +409,7 @@ export class ChromishVgpuRenderer {
         format: "rgba8unorm",
         label: "chromish-background-image",
         size: [canvas.width, canvas.height],
-        usage: ["copy_dst", "texture_binding"],
+        usage: CHROMISH_BACKGROUND_IMAGE_TEXTURE_USAGE,
       });
       this.gpu.gpu.queue.copyExternalImageToTexture(
         { source: canvas },
@@ -447,6 +419,8 @@ export class ChromishVgpuRenderer {
       const previous = this.backgroundTexture;
       this.backgroundTexture = nextTexture;
       this.chromeDraw?.set({ backgroundTexture: nextTexture });
+      this.gemDraw?.set({ backgroundTexture: nextTexture });
+      this.fireDraw?.set({ backgroundTexture: nextTexture });
       this.toneMap.set({ backgroundTexture: nextTexture });
       previous.destroy();
       return [canvas.width, canvas.height];
@@ -471,17 +445,31 @@ export class ChromishVgpuRenderer {
     const tileLeft = (tile[0] - tile[2] + 1) * 0.5;
     const tileTop = (1 - (tile[1] + tile[3])) * 0.5;
     const backgroundTile = [tileLeft, tileTop, tile[2], tile[3]] as const;
-    this.chromeDraw?.set({
+    const modelValues = new Float32Array(model.elements);
+    const exitDraw = this.selectedExitDraw(parameters);
+    if (exitDraw) {
+      this.exitTarget.resize(hdr.size);
+      exitDraw.set({ exitScene: { model: modelValues, viewProjection: new Float32Array(viewProjection.elements), tile, cameraPosition: [...camera.position.toArray(), 1] } });
+    }
+    const viewProjectionValues = new Float32Array(viewProjection.elements);
+    const materialSettings = parameters.materialSettings ?? defaultMaterialSettings(parameters.material);
+    this.selectedDraw(parameters)?.set({
       scene: {
+        materialSettings,
+        backgroundColorAndMode: [
+          ...hexToLinearRgba(parameters.background).slice(0, 3),
+          parameters.includeBackgroundImage ? 1 : 0,
+        ],
         backgroundInfo: [fullSize[0], fullSize[1], parameters.backgroundImageSize[0], parameters.backgroundImageSize[1]],
         backgroundTile,
         cameraPosition: [...camera.position.toArray(), 1],
+        optics: [(parameters.material === "diamond" && this.gemDraw ? this.gemDepth : this.opticalDepth) * (parameters.objectScale ?? 1), ...this.meshY, 0],
         controls: [parameters.reflectionContrast, parameters.studioRotationRadians, chromishMaterialIndex(parameters.material), parameters.loopPhaseRadians],
-        model: new Float32Array(model.elements),
+        model: modelValues,
         tile,
         secondaryColor: hexToLinearRgba(parameters.secondaryColor),
         tintRoughness: [...hexToLinearRgba(parameters.primaryColor).slice(0, 3), parameters.roughness],
-        viewProjection: new Float32Array(viewProjection.elements),
+        viewProjection: viewProjectionValues,
       },
     });
     this.toneMap.set({
@@ -490,7 +478,8 @@ export class ChromishVgpuRenderer {
         background: hexToLinearRgba(parameters.background),
         backgroundInfo: [fullSize[0], fullSize[1], parameters.backgroundImageSize[0], parameters.backgroundImageSize[1]],
         backgroundTile,
-        exposureAndMode: [parameters.exposure, parameters.includeBackground ? 1 : 0, parameters.includeBackgroundImage ? 1 : 0, 0],
+        fireInfo: [parameters.loopPhaseRadians, parameters.material === "fire" ? 1 : 0, materialSettings[3], 0],
+        exposureAndMode: [parameters.exposure, parameters.includeBackground ? 1 : 0, parameters.includeBackgroundImage ? 1 : 0, parameters.saturation ?? 1],
       },
     });
   }
@@ -500,8 +489,11 @@ export class ChromishVgpuRenderer {
     const size = this.canvasSurface.size;
     this.setUniforms(parameters, size, [0, 0, 1, 1], this.previewHdr);
     frame(this.gpu, (current) => {
+      const exit = this.selectedExitDraw(parameters);
+      if (exit) current.pass({ target: this.exitTarget, clear: [0, 0, 0, 0], clearDepth: 1 }, exit);
       current.pass({ clear: [0, 0, 0, 0], clearDepth: 1, target: this.previewHdr }, (pass) => {
-        if (this.chromeDraw) pass.draw(this.chromeDraw);
+        const selected = this.selectedDraw(parameters);
+        if (selected) pass.draw(selected);
       });
       current.pass({ clear: [0, 0, 0, 0], target: this.canvasSurface }, this.toneMap);
     });
@@ -514,7 +506,11 @@ export class ChromishVgpuRenderer {
     height: number,
   ): Promise<void> {
     if (this.disposed || !this.chromeDraw) throw new Error("Upload a valid SVG before exporting.");
-    const tileEdge = 2048;
+    const tileEdge = parameters.material === "fire" ? 1024 : 2048;
+    // The flame pass samples below/alongside each pixel. Render those neighbors
+    // too, then crop, so an export tile boundary cannot truncate a plume.
+    const guardY = parameters.material === "fire" ? Math.ceil(height * 0.205) : 0;
+    const guardX = parameters.material === "fire" ? Math.ceil(height * 0.14) : 0;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.globalAlpha = 1;
     context.globalCompositeOperation = "source-over";
@@ -522,20 +518,31 @@ export class ChromishVgpuRenderer {
       for (let x = 0; x < width; x += tileEdge) {
         const tileWidth = Math.min(tileEdge, width - x);
         const tileHeight = Math.min(tileEdge, height - y);
-        this.exportHdr.resize([tileWidth, tileHeight]);
-        this.exportLdr.resize([tileWidth, tileHeight]);
+        const left = Math.max(0, x - guardX);
+        const top = parameters.material === "fire" ? Math.max(0, y - Math.ceil(height * 0.07)) : y;
+        const renderWidth = Math.min(width, x + tileWidth + guardX) - left;
+        const renderHeight = Math.min(height, y + tileHeight + guardY) - top;
+        this.exportHdr.resize([renderWidth, renderHeight]);
+        this.exportLdr.resize([renderWidth, renderHeight]);
         this.setUniforms(
           parameters,
           [width, height],
-          tileUniform(width, height, x, y, tileWidth, tileHeight),
+          tileUniform(width, height, left, top, renderWidth, renderHeight),
           this.exportHdr,
         );
-        await this.chromeDraw.compile(this.exportHdr);
+        const selected = this.selectedDraw(parameters)!;
+        await selected.compile(this.exportHdr);
+        const exit = this.selectedExitDraw(parameters);
+        if (exit) await exit.compile(this.exitTarget);
         await this.toneMap.compile(this.exportLdr);
         let pixels: Uint8Array<ArrayBufferLike> = new Uint8Array();
         for (let attempt = 0; attempt < 3; attempt += 1) {
+          this.setUniforms(parameters, [width, height], tileUniform(width, height, left, top, renderWidth, renderHeight), this.exportHdr);
           const exportFrame = frame(this.gpu, (current) => {
-            current.pass({ clear: [0, 0, 0, 0], clearDepth: 1, target: this.exportHdr }, this.chromeDraw!);
+            if (exit) current.pass({ target: this.exitTarget, clear: [0, 0, 0, 0], clearDepth: 1 }, exit);
+            current.pass({ clear: [0, 0, 0, 0], clearDepth: 1, target: this.exportHdr }, (pass) => {
+              pass.draw(selected);
+            });
             current.pass({ clear: [0, 0, 0, 0], target: this.exportLdr }, this.toneMap);
           });
           await exportFrame.done;
@@ -547,26 +554,28 @@ export class ChromishVgpuRenderer {
           throw new Error("The WebGPU export readback did not contain the requested opaque background.");
         }
         const tileCanvas = document.createElement("canvas");
-        tileCanvas.width = tileWidth;
-        tileCanvas.height = tileHeight;
+        tileCanvas.width = renderWidth;
+        tileCanvas.height = renderHeight;
         const tileContext = tileCanvas.getContext("2d");
         if (!tileContext) throw new Error("A 2D canvas is required for tiled export compositing.");
         tileContext.putImageData(
-          new ImageData(Uint8ClampedArray.from(pixels), tileWidth, tileHeight),
+          new ImageData(Uint8ClampedArray.from(pixels), renderWidth, renderHeight),
           0,
           0,
         );
-        context.drawImage(tileCanvas, x, y);
+        context.drawImage(tileCanvas, x - left, y - top, tileWidth, tileHeight, x, y, tileWidth, tileHeight);
       }
     }
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   }
 
   dispose(): void {
+    this.fireGeometry?.destroy();
     if (this.disposed) return;
     this.disposed = true;
     this.backgroundLoadGeneration += 1;
     this.meshGeometry?.destroy();
+    this.gemGeometry?.destroy();
     this.backgroundTexture.destroy();
     this.canvasSurface.dispose();
     this.gpu.dispose();
