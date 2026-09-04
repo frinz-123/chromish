@@ -1,0 +1,1326 @@
+{
+  "changeMetric": "max-yuva-diff-v1",
+  "contactSheet": {
+    "columns": 13,
+    "height": 2352,
+    "path": "src/app/reference-studies/motion-v1-b740d39516f721df08c2042f2c6929642f9faae0712087006ac9ec5e3e46b0cf/contact-sheet.png",
+    "rows": 8,
+    "sha256": "f1b2fab1cccc2857f8e6740474f4ef4c628358da55291a18274b0ddfcd982479",
+    "width": 5993
+  },
+  "decodedFrameCount": 412,
+  "detectedEvents": [
+    {
+      "afterFrameId": "source-frame:7",
+      "beforeFrameId": "source-frame:5",
+      "eventId": "motion-event:change:5-6-7",
+      "kind": "change",
+      "peakFrameId": "source-frame:6",
+      "score": 0.02307870588235294,
+      "windowFrameIds": [
+        "source-frame:5",
+        "source-frame:6",
+        "source-frame:7"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:66",
+      "beforeFrameId": "source-frame:64",
+      "eventId": "motion-event:change:64-65-66",
+      "kind": "change",
+      "peakFrameId": "source-frame:65",
+      "score": 0.013772352941176472,
+      "windowFrameIds": [
+        "source-frame:64",
+        "source-frame:65",
+        "source-frame:66"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:116",
+      "beforeFrameId": "source-frame:114",
+      "eventId": "motion-event:change:114-115-116",
+      "kind": "change",
+      "peakFrameId": "source-frame:115",
+      "score": 0.012890235294117647,
+      "windowFrameIds": [
+        "source-frame:114",
+        "source-frame:115",
+        "source-frame:116"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:232",
+      "beforeFrameId": "source-frame:230",
+      "eventId": "motion-event:change:230-231-232",
+      "kind": "change",
+      "peakFrameId": "source-frame:231",
+      "score": 0.012805450980392158,
+      "windowFrameIds": [
+        "source-frame:230",
+        "source-frame:231",
+        "source-frame:232"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:268",
+      "beforeFrameId": "source-frame:266",
+      "eventId": "motion-event:change:266-267-268",
+      "kind": "change",
+      "peakFrameId": "source-frame:267",
+      "score": 0.01265435294117647,
+      "windowFrameIds": [
+        "source-frame:266",
+        "source-frame:267",
+        "source-frame:268"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:355",
+      "beforeFrameId": "source-frame:353",
+      "eventId": "motion-event:change:353-354-355",
+      "kind": "change",
+      "peakFrameId": "source-frame:354",
+      "score": 0.010007372549019608,
+      "windowFrameIds": [
+        "source-frame:353",
+        "source-frame:354",
+        "source-frame:355"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:381",
+      "beforeFrameId": "source-frame:379",
+      "eventId": "motion-event:change:379-380-381",
+      "kind": "change",
+      "peakFrameId": "source-frame:380",
+      "score": 0.013400549019607843,
+      "windowFrameIds": [
+        "source-frame:379",
+        "source-frame:380",
+        "source-frame:381"
+      ]
+    },
+    {
+      "afterFrameId": "source-frame:1",
+      "beforeFrameId": "source-frame:411",
+      "eventId": "motion-event:loop-seam:411-0-1",
+      "kind": "loop-seam",
+      "peakFrameId": "source-frame:0",
+      "score": 0.08869490196078432,
+      "windowFrameIds": [
+        "source-frame:411",
+        "source-frame:0",
+        "source-frame:1"
+      ]
+    }
+  ],
+  "durationSeconds": 6.950201932038835,
+  "evidenceVersion": 1,
+  "ffmpegVersion": "ffmpeg 9.0.1",
+  "ffprobeVersion": "ffprobe 9.0.1",
+  "focusWindows": [],
+  "height": 622,
+  "maximumSourceFrameGapSeconds": 0.06666699999999999,
+  "nominalFrameRate": 59.280575539568346,
+  "overviewFrameIds": [
+    "source-frame:0",
+    "source-frame:5",
+    "source-frame:6",
+    "source-frame:10",
+    "source-frame:15",
+    "source-frame:20",
+    "source-frame:25",
+    "source-frame:30",
+    "source-frame:35",
+    "source-frame:40",
+    "source-frame:45",
+    "source-frame:50",
+    "source-frame:55",
+    "source-frame:60",
+    "source-frame:65",
+    "source-frame:70",
+    "source-frame:75",
+    "source-frame:80",
+    "source-frame:85",
+    "source-frame:90",
+    "source-frame:95",
+    "source-frame:100",
+    "source-frame:105",
+    "source-frame:110",
+    "source-frame:115",
+    "source-frame:120",
+    "source-frame:125",
+    "source-frame:130",
+    "source-frame:135",
+    "source-frame:140",
+    "source-frame:145",
+    "source-frame:150",
+    "source-frame:155",
+    "source-frame:160",
+    "source-frame:165",
+    "source-frame:170",
+    "source-frame:175",
+    "source-frame:180",
+    "source-frame:185",
+    "source-frame:190",
+    "source-frame:195",
+    "source-frame:200",
+    "source-frame:205",
+    "source-frame:210",
+    "source-frame:215",
+    "source-frame:220",
+    "source-frame:225",
+    "source-frame:230",
+    "source-frame:235",
+    "source-frame:240",
+    "source-frame:245",
+    "source-frame:250",
+    "source-frame:255",
+    "source-frame:260",
+    "source-frame:265",
+    "source-frame:270",
+    "source-frame:275",
+    "source-frame:280",
+    "source-frame:285",
+    "source-frame:290",
+    "source-frame:295",
+    "source-frame:300",
+    "source-frame:305",
+    "source-frame:310",
+    "source-frame:315",
+    "source-frame:320",
+    "source-frame:325",
+    "source-frame:330",
+    "source-frame:335",
+    "source-frame:340",
+    "source-frame:345",
+    "source-frame:350",
+    "source-frame:355",
+    "source-frame:360",
+    "source-frame:365",
+    "source-frame:370",
+    "source-frame:375",
+    "source-frame:380",
+    "source-frame:385",
+    "source-frame:390",
+    "source-frame:395",
+    "source-frame:400",
+    "source-frame:405",
+    "source-frame:410",
+    "source-frame:411"
+  ],
+  "overviewTargetFps": 12,
+  "reviewedFrames": [
+    {
+      "cell": {
+        "column": 0,
+        "row": 0
+      },
+      "frameId": "source-frame:0",
+      "sourceFrameIndex": 0,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=0",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 0
+      },
+      "frameId": "source-frame:1",
+      "sourceFrameIndex": 1,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=1",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.016667
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 0
+      },
+      "frameId": "source-frame:5",
+      "sourceFrameIndex": 5,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=5",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.083333
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 0
+      },
+      "frameId": "source-frame:6",
+      "sourceFrameIndex": 6,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=6",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.15
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 0
+      },
+      "frameId": "source-frame:7",
+      "sourceFrameIndex": 7,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=7",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.2
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 0
+      },
+      "frameId": "source-frame:10",
+      "sourceFrameIndex": 10,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=10",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.25
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 0
+      },
+      "frameId": "source-frame:15",
+      "sourceFrameIndex": 15,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=15",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.333333
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 0
+      },
+      "frameId": "source-frame:20",
+      "sourceFrameIndex": 20,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=20",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.416667
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 0
+      },
+      "frameId": "source-frame:25",
+      "sourceFrameIndex": 25,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=25",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.5
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 0
+      },
+      "frameId": "source-frame:30",
+      "sourceFrameIndex": 30,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=30",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.583333
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 0
+      },
+      "frameId": "source-frame:35",
+      "sourceFrameIndex": 35,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=35",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.666667
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 0
+      },
+      "frameId": "source-frame:40",
+      "sourceFrameIndex": 40,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=40",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.75
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 0
+      },
+      "frameId": "source-frame:45",
+      "sourceFrameIndex": 45,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=45",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.833333
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 1
+      },
+      "frameId": "source-frame:50",
+      "sourceFrameIndex": 50,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=50",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 0.916667
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 1
+      },
+      "frameId": "source-frame:55",
+      "sourceFrameIndex": 55,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=55",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 1
+      },
+      "frameId": "source-frame:60",
+      "sourceFrameIndex": 60,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=60",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.083333
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 1
+      },
+      "frameId": "source-frame:64",
+      "sourceFrameIndex": 64,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=64",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.15
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 1
+      },
+      "frameId": "source-frame:65",
+      "sourceFrameIndex": 65,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=65",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.166667
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 1
+      },
+      "frameId": "source-frame:66",
+      "sourceFrameIndex": 66,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=66",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.183333
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 1
+      },
+      "frameId": "source-frame:70",
+      "sourceFrameIndex": 70,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=70",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.25
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 1
+      },
+      "frameId": "source-frame:75",
+      "sourceFrameIndex": 75,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=75",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.333333
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 1
+      },
+      "frameId": "source-frame:80",
+      "sourceFrameIndex": 80,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=80",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.416667
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 1
+      },
+      "frameId": "source-frame:85",
+      "sourceFrameIndex": 85,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=85",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.5
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 1
+      },
+      "frameId": "source-frame:90",
+      "sourceFrameIndex": 90,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=90",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.583333
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 1
+      },
+      "frameId": "source-frame:95",
+      "sourceFrameIndex": 95,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=95",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.666667
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 1
+      },
+      "frameId": "source-frame:100",
+      "sourceFrameIndex": 100,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=100",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.75
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 2
+      },
+      "frameId": "source-frame:105",
+      "sourceFrameIndex": 105,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=105",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.833333
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 2
+      },
+      "frameId": "source-frame:110",
+      "sourceFrameIndex": 110,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=110",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.916667
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 2
+      },
+      "frameId": "source-frame:114",
+      "sourceFrameIndex": 114,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=114",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 1.983333
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 2
+      },
+      "frameId": "source-frame:115",
+      "sourceFrameIndex": 115,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=115",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 2
+      },
+      "frameId": "source-frame:116",
+      "sourceFrameIndex": 116,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=116",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.016667
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 2
+      },
+      "frameId": "source-frame:120",
+      "sourceFrameIndex": 120,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=120",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.083333
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 2
+      },
+      "frameId": "source-frame:125",
+      "sourceFrameIndex": 125,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=125",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.166667
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 2
+      },
+      "frameId": "source-frame:130",
+      "sourceFrameIndex": 130,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=130",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.25
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 2
+      },
+      "frameId": "source-frame:135",
+      "sourceFrameIndex": 135,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=135",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.333333
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 2
+      },
+      "frameId": "source-frame:140",
+      "sourceFrameIndex": 140,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=140",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.416667
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 2
+      },
+      "frameId": "source-frame:145",
+      "sourceFrameIndex": 145,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=145",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.5
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 2
+      },
+      "frameId": "source-frame:150",
+      "sourceFrameIndex": 150,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=150",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.583333
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 2
+      },
+      "frameId": "source-frame:155",
+      "sourceFrameIndex": 155,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=155",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.666667
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 3
+      },
+      "frameId": "source-frame:160",
+      "sourceFrameIndex": 160,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=160",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.75
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 3
+      },
+      "frameId": "source-frame:165",
+      "sourceFrameIndex": 165,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=165",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.833333
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 3
+      },
+      "frameId": "source-frame:170",
+      "sourceFrameIndex": 170,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=170",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 2.916667
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 3
+      },
+      "frameId": "source-frame:175",
+      "sourceFrameIndex": 175,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=175",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 3
+      },
+      "frameId": "source-frame:180",
+      "sourceFrameIndex": 180,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=180",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.083333
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 3
+      },
+      "frameId": "source-frame:185",
+      "sourceFrameIndex": 185,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=185",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.166667
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 3
+      },
+      "frameId": "source-frame:190",
+      "sourceFrameIndex": 190,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=190",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.25
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 3
+      },
+      "frameId": "source-frame:195",
+      "sourceFrameIndex": 195,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=195",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.333333
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 3
+      },
+      "frameId": "source-frame:200",
+      "sourceFrameIndex": 200,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=200",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.416667
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 3
+      },
+      "frameId": "source-frame:205",
+      "sourceFrameIndex": 205,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=205",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.5
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 3
+      },
+      "frameId": "source-frame:210",
+      "sourceFrameIndex": 210,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=210",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.583333
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 3
+      },
+      "frameId": "source-frame:215",
+      "sourceFrameIndex": 215,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=215",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.666667
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 3
+      },
+      "frameId": "source-frame:220",
+      "sourceFrameIndex": 220,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=220",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.75
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 4
+      },
+      "frameId": "source-frame:225",
+      "sourceFrameIndex": 225,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=225",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.833333
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 4
+      },
+      "frameId": "source-frame:230",
+      "sourceFrameIndex": 230,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=230",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.916667
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 4
+      },
+      "frameId": "source-frame:231",
+      "sourceFrameIndex": 231,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=231",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.933333
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 4
+      },
+      "frameId": "source-frame:232",
+      "sourceFrameIndex": 232,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=232",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 3.95
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 4
+      },
+      "frameId": "source-frame:235",
+      "sourceFrameIndex": 235,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=235",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 4
+      },
+      "frameId": "source-frame:240",
+      "sourceFrameIndex": 240,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=240",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.083333
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 4
+      },
+      "frameId": "source-frame:245",
+      "sourceFrameIndex": 245,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=245",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.166667
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 4
+      },
+      "frameId": "source-frame:250",
+      "sourceFrameIndex": 250,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=250",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.25
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 4
+      },
+      "frameId": "source-frame:255",
+      "sourceFrameIndex": 255,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=255",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.333333
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 4
+      },
+      "frameId": "source-frame:260",
+      "sourceFrameIndex": 260,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=260",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.416667
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 4
+      },
+      "frameId": "source-frame:265",
+      "sourceFrameIndex": 265,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=265",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.5
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 4
+      },
+      "frameId": "source-frame:266",
+      "sourceFrameIndex": 266,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=266",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.516667
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 4
+      },
+      "frameId": "source-frame:267",
+      "sourceFrameIndex": 267,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=267",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.533333
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 5
+      },
+      "frameId": "source-frame:268",
+      "sourceFrameIndex": 268,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=268",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.55
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 5
+      },
+      "frameId": "source-frame:270",
+      "sourceFrameIndex": 270,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=270",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.583333
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 5
+      },
+      "frameId": "source-frame:275",
+      "sourceFrameIndex": 275,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=275",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.666667
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 5
+      },
+      "frameId": "source-frame:280",
+      "sourceFrameIndex": 280,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=280",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.75
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 5
+      },
+      "frameId": "source-frame:285",
+      "sourceFrameIndex": 285,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=285",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.833333
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 5
+      },
+      "frameId": "source-frame:290",
+      "sourceFrameIndex": 290,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=290",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 4.916667
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 5
+      },
+      "frameId": "source-frame:295",
+      "sourceFrameIndex": 295,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=295",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 5
+      },
+      "frameId": "source-frame:300",
+      "sourceFrameIndex": 300,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=300",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.083333
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 5
+      },
+      "frameId": "source-frame:305",
+      "sourceFrameIndex": 305,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=305",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.166667
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 5
+      },
+      "frameId": "source-frame:310",
+      "sourceFrameIndex": 310,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=310",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.25
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 5
+      },
+      "frameId": "source-frame:315",
+      "sourceFrameIndex": 315,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=315",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.333333
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 5
+      },
+      "frameId": "source-frame:320",
+      "sourceFrameIndex": 320,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=320",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.416667
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 5
+      },
+      "frameId": "source-frame:325",
+      "sourceFrameIndex": 325,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=325",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.5
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 6
+      },
+      "frameId": "source-frame:330",
+      "sourceFrameIndex": 330,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=330",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.583333
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 6
+      },
+      "frameId": "source-frame:335",
+      "sourceFrameIndex": 335,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=335",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.666667
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 6
+      },
+      "frameId": "source-frame:340",
+      "sourceFrameIndex": 340,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=340",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.75
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 6
+      },
+      "frameId": "source-frame:345",
+      "sourceFrameIndex": 345,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=345",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.833333
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 6
+      },
+      "frameId": "source-frame:350",
+      "sourceFrameIndex": 350,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=350",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.916667
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 6
+      },
+      "frameId": "source-frame:353",
+      "sourceFrameIndex": 353,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=353",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.966667
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 6
+      },
+      "frameId": "source-frame:354",
+      "sourceFrameIndex": 354,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=354",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 5.983333
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 6
+      },
+      "frameId": "source-frame:355",
+      "sourceFrameIndex": 355,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=355",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 6
+      },
+      "frameId": "source-frame:360",
+      "sourceFrameIndex": 360,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=360",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.083333
+    },
+    {
+      "cell": {
+        "column": 9,
+        "row": 6
+      },
+      "frameId": "source-frame:365",
+      "sourceFrameIndex": 365,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=365",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.166667
+    },
+    {
+      "cell": {
+        "column": 10,
+        "row": 6
+      },
+      "frameId": "source-frame:370",
+      "sourceFrameIndex": 370,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=370",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.25
+    },
+    {
+      "cell": {
+        "column": 11,
+        "row": 6
+      },
+      "frameId": "source-frame:375",
+      "sourceFrameIndex": 375,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=375",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.333333
+    },
+    {
+      "cell": {
+        "column": 12,
+        "row": 6
+      },
+      "frameId": "source-frame:379",
+      "sourceFrameIndex": 379,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=379",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.4
+    },
+    {
+      "cell": {
+        "column": 0,
+        "row": 7
+      },
+      "frameId": "source-frame:380",
+      "sourceFrameIndex": 380,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=380",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.416667
+    },
+    {
+      "cell": {
+        "column": 1,
+        "row": 7
+      },
+      "frameId": "source-frame:381",
+      "sourceFrameIndex": 381,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=381",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.433333
+    },
+    {
+      "cell": {
+        "column": 2,
+        "row": 7
+      },
+      "frameId": "source-frame:385",
+      "sourceFrameIndex": 385,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=385",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.5
+    },
+    {
+      "cell": {
+        "column": 3,
+        "row": 7
+      },
+      "frameId": "source-frame:390",
+      "sourceFrameIndex": 390,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=390",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.583333
+    },
+    {
+      "cell": {
+        "column": 4,
+        "row": 7
+      },
+      "frameId": "source-frame:395",
+      "sourceFrameIndex": 395,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=395",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.666667
+    },
+    {
+      "cell": {
+        "column": 5,
+        "row": 7
+      },
+      "frameId": "source-frame:400",
+      "sourceFrameIndex": 400,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=400",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.75
+    },
+    {
+      "cell": {
+        "column": 6,
+        "row": 7
+      },
+      "frameId": "source-frame:405",
+      "sourceFrameIndex": 405,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=405",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.833333
+    },
+    {
+      "cell": {
+        "column": 7,
+        "row": 7
+      },
+      "frameId": "source-frame:410",
+      "sourceFrameIndex": 410,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=410",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.916667
+    },
+    {
+      "cell": {
+        "column": 8,
+        "row": 7
+      },
+      "frameId": "source-frame:411",
+      "sourceFrameIndex": 411,
+      "sourceLocator": "/Users/sw/Documents/ChatGPT/Chromish/video-reference/2026-09-03-chrome-emblem/reference-normalized.mp4#frame=411",
+      "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+      "timeSeconds": 6.933333
+    }
+  ],
+  "scannedFrameCount": 412,
+  "sourceBasename": "reference-normalized.mp4",
+  "sourceKind": "screen-recording",
+  "sourceSha256": "ef550a988daab09e1f573d4936a07e2ad9dd0e22b4c3d234f072ddcc43553dca",
+  "studyId": "motion-v1-b740d39516f721df08c2042f2c6929642f9faae0712087006ac9ec5e3e46b0cf",
+  "timing": {
+    "authority": "decoded-timestamps"
+  },
+  "timingMode": "seconds",
+  "width": 976
+}
