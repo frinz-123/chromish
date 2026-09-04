@@ -121,6 +121,12 @@ fn backgroundUv(fragmentPosition: vec2f) -> vec2f {
   let environment = studio(reflected, contrast, studioAngle);
   let fresnel = pow(1.0 - max(dot(n, v), 0.0), 5.0);
   if (material < 0.5) {
+    let softened = mix(environment, vec3f(dot(environment, vec3f(0.2126, 0.7152, 0.0722))), roughness * 0.72);
+    let metal = softened * tint * mix(0.76, 1.34, fresnel);
+    let rim = fresnel * (1.2 - roughness) * tint;
+    return vec4f(metal + rim, 1.0);
+  }
+  if (material < 1.5) {
     let refracted = refract(-v, n, 1.0 / 2.42);
     let dispersion = vec3f(
       studio(rotateY(refracted, -0.035), contrast, studioAngle).r,
@@ -131,19 +137,19 @@ fn backgroundUv(fragmentPosition: vec2f) -> vec2f {
     let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.045).rgb;
     return vec4f(mix(refractedBackdrop, dispersion, 0.28) + environment * fresnel * 1.2 + brilliance * vec3f(4.0), 0.3 + fresnel * 0.68);
   }
-  if (material < 1.5) {
+  if (material < 2.5) {
     let light = normalize(vec3f(-0.45, 0.75, 0.6));
     let diffuse = 0.24 + max(dot(n, light), 0.0) * 0.76;
     let highlight = pow(max(dot(reflect(-light, n), v), 0.0), mix(96.0, 18.0, roughness));
     return vec4f(tint * diffuse + accent * highlight * 1.8 + fresnel * accent * 0.35, 1.0);
   }
-  if (material < 2.5) {
+  if (material < 3.5) {
     let refracted = refract(-v, n, 1.0 / 1.52);
     let glassBody = studio(refracted, contrast * 0.75, studioAngle) * vec3f(0.7, 0.9, 1.0);
     let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.025).rgb;
     return vec4f(mix(refractedBackdrop, glassBody, 0.16) + environment * fresnel + vec3f(0.02, 0.05, 0.07), 0.16 + fresnel * 0.72);
   }
-  if (material < 3.5) {
+  if (material < 4.5) {
     let turbulence = fireNoise(input.worldPosition, time);
     let heightGlow = clamp(input.worldPosition.y * 0.35 + 0.58, 0.0, 1.0);
     let flame = smoothstep(0.18, 0.88, turbulence + heightGlow * 0.35);
@@ -213,7 +219,7 @@ export type ChromishRenderParameters = Readonly<{
   includeBackground: boolean;
   includeBackgroundImage: boolean;
   loopPhaseRadians: number;
-  material: "diamond" | "plastic" | "glass" | "fire" | "playdough";
+  material: "chrome" | "diamond" | "plastic" | "glass" | "fire" | "playdough";
   primaryColor: string;
   reflectionContrast: number;
   roughness: number;
@@ -223,7 +229,7 @@ export type ChromishRenderParameters = Readonly<{
 }>;
 
 export function chromishMaterialIndex(material: ChromishRenderParameters["material"]): number {
-  return { diamond: 0, plastic: 1, glass: 2, fire: 3, playdough: 4 }[material];
+  return { chrome: 0, diamond: 1, plastic: 2, glass: 3, fire: 4, playdough: 5 }[material];
 }
 
 export function chromishFireLoopOffset(phaseRadians: number): readonly [number, number, number] {

@@ -108,11 +108,7 @@ test("browser: chromish media.svgSource", async ({ page }) => {
 test("browser: chromish media.backgroundImage", async ({ page }) => {
   await openChromish(page);
   const canvas = page.locator(canvasSelector);
-  await expect(canvas).toHaveAttribute("data-chromish-background-image", "photo-1638742385167-96fc60e12f59.png", { timeout: 20_000 });
-  await page.getByRole("button", { name: "Remove photo-1638742385167-96fc60e12f59.png" }).click();
   await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
-  await page.getByRole("button", { name: "Reset controls" }).click();
-  await expect(canvas).toHaveAttribute("data-chromish-background-image", "photo-1638742385167-96fc60e12f59.png", { timeout: 20_000 });
 
   const session = await createProofSession(page);
   const observation = session.observe((root) => {
@@ -120,7 +116,7 @@ test("browser: chromish media.backgroundImage", async ({ page }) => {
     const fileName = output?.dataset.chromishBackgroundImage ?? "none";
     return {
       itemIds: fileName === "none" ? [] : [fileName],
-      outputSignature: `${fileName}:${output?.dataset.chromishBackgroundTransform ?? "{}"}`,
+      outputSignature: `${fileName}:${output?.dataset.chromishBackgroundTransform ?? "{}"}:${output?.dataset.chromishBackgroundImageReady ?? "false"}`,
     };
   });
   const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR4nGP4z8DAwMDAxMDAwMAAAAwBAQDJ/pLvAAAAAElFTkSuQmCC", "base64");
@@ -129,11 +125,17 @@ test("browser: chromish media.backgroundImage", async ({ page }) => {
     session.controlAction("media.backgroundImage", async (field) => {
       await field.locator('input[type="file"]').setInputFiles({ buffer: tinyPng, mimeType: "image/png", name: "refraction-test.png" });
     }),
-    { itemIds: ["refraction-test.png"], outputSignature: "refraction-test.png:{}" },
+    { itemIds: ["refraction-test.png"], outputSignature: "refraction-test.png:{}:true" },
     { requirementId: "media.backgroundImage", stabilityIntervalMs: 20, timeoutMs: 20_000 },
   );
   await page.getByRole("button", { name: "90°" }).click();
   await expect(canvas).toHaveAttribute("data-chromish-background-transform", /"rotationDeg":90/u);
+  await expect(canvas).toHaveAttribute("data-chromish-background-image-ready", "true", { timeout: 20_000 });
   await page.getByRole("button", { name: "Flip H" }).click();
   await expect(canvas).toHaveAttribute("data-chromish-background-transform", /"flipHorizontal":true/u);
+  await expect(canvas).toHaveAttribute("data-chromish-background-image-ready", "true", { timeout: 20_000 });
+  await page.getByRole("button", { name: "Remove refraction-test.png" }).click();
+  await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
+  await page.getByRole("button", { name: "Reset controls" }).click();
+  await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
 });

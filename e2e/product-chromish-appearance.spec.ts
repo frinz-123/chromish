@@ -44,6 +44,8 @@ test("browser: chromish appearance.background", async ({ page }) => {
   await openChromish(page);
   await uploadVectorSvg(page);
   await pauseTimeline(page);
+  await expect(page.locator(canvasSelector)).toHaveAttribute("data-chromish-background-image", "none");
+  await expect(page.locator(canvasSelector)).toHaveAttribute("data-chromish-background-image-ready", "false");
   for (const include of [false, true]) {
     await setSwitch(page, "export.includeBackground", include);
     await expect(control(page, "appearance.background")).toBeVisible();
@@ -59,4 +61,3 @@ test("browser: chromish appearance.background", async ({ page }) => {
     });
   }
 });
-

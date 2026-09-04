@@ -36,7 +36,7 @@ const snapshot: ChromishRuntimeSnapshot = {
     includeBackground: true,
     includeBackgroundImage: true,
     loopPhaseRadians: 0.2,
-    material: "plastic",
+    material: "chrome",
     primaryColor: "#E6ECEF",
     reflectionContrast: 1.4,
     rotationRadians: 0.2,
@@ -90,6 +90,7 @@ describe("Chromish delivery kits", () => {
       expect(new TextDecoder().decode(glb.subarray(0, 4))).toBe("glTF");
       const document = await new WebIO().readBinary(glb);
       expect(document.getRoot().listMeshes()).toHaveLength(1);
+      expect(document.getRoot().listMaterials()[0]?.getMetallicFactor()).toBe(1);
       const fireZip = unzipSync(await createGlbKit({
         ...snapshot,
         parameters: { ...snapshot.parameters, material: "fire", secondaryColor: "#00FF00" },

@@ -13,12 +13,13 @@ import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL, chromishFireLoopOffset, chrom
 
 describe("Chromish vgpu bindings", () => {
   it("maps every selectable material to a stable WGSL branch", () => {
-    expect(["diamond", "plastic", "glass", "fire", "playdough"].map((material) =>
+    expect(["chrome", "diamond", "plastic", "glass", "fire", "playdough"].map((material) =>
       chromishMaterialIndex(material as Parameters<typeof chromishMaterialIndex>[0]),
-    )).toEqual([0, 1, 2, 3, 4]);
+    )).toEqual([0, 1, 2, 3, 4, 5]);
     expect(CHROME_SHADER_WGSL).toContain("1.0 / 2.42");
     expect(CHROME_SHADER_WGSL).toContain("1.0 / 1.52");
     expect(CHROME_SHADER_WGSL).toContain("fireNoise");
+    expect(CHROME_SHADER_WGSL).toContain("let metal = softened * tint");
   });
 
   it("stitches the fire turbulence phase at the forward timeline seam", () => {

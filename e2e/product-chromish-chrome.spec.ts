@@ -91,7 +91,7 @@ for (const [testName, target, outputAttribute] of [
 test("browser: chromish material.type", async ({ page }) => {
   await openChromish(page);
   await uploadVectorSvg(page);
-  for (const material of ["plastic", "glass", "fire", "playdough", "diamond"] as const) {
+  for (const material of ["chrome", "plastic", "glass", "fire", "playdough", "diamond"] as const) {
     await chooseSelect(page, "material.type", material);
     await expect(page.locator(canvasSelector)).toHaveAttribute("data-chromish-material", material);
   }

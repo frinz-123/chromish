@@ -97,23 +97,11 @@ describe("Chromish appSchema", () => {
     ]);
     expect(appSchema.panels.layers).toBeUndefined();
     expect(appSchema.panels.timeline?.enabled).toBe(true);
-    expect(appSchema.media.defaultAssets).toEqual([
-      expect.objectContaining({
-        assetKind: "image",
-        fileName: "photo-1638742385167-96fc60e12f59.png",
-        sourceTarget: "media.backgroundImage",
-      }),
-    ]);
-    const defaultBackground = appSchema.media.defaultAssets[0];
-    expect(defaultBackground?.assetKind).toBe("image");
-    if (!defaultBackground || defaultBackground.assetKind === "model") {
-      throw new Error("Chromish must provide an image default background.");
-    }
-    expect(defaultBackground.dataUrl).toMatch(/^data:image\/png;base64,/u);
-    const encoded = defaultBackground.dataUrl.split(",")[1] ?? "";
-    const bytes = Buffer.from(encoded, "base64");
-    expect(bytes.readUInt32BE(16)).toBe(1632);
-    expect(bytes.readUInt32BE(20)).toBe(918);
+    expect(appSchema.media.defaultAssets).toEqual([]);
+    const materialControl = appSchema.panels.controls?.sections
+      .flatMap((section) => Object.values(section.controls))
+      .find((control) => control.target === "material.type");
+    expect(materialControl?.defaultValue).toBe("chrome");
   });
 
   it("enables playback without exposing keyframe editing", () => {

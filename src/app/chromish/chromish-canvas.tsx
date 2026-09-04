@@ -148,6 +148,7 @@ export function ChromishCanvas(): React.JSX.Element {
   const [feedback, setFeedback] = React.useState<string | null>(null);
   const [gpuUnavailable, setGpuUnavailable] = React.useState(false);
   const [backgroundImageSize, setBackgroundImageSize] = React.useState<readonly [number, number]>([1, 1]);
+  const [backgroundImageReady, setBackgroundImageReady] = React.useState(false);
   const asset = useToolcraftSelector(selectSvgAsset);
   const backgroundAsset = useToolcraftSelector(selectBackgroundAsset);
   const assets = React.useMemo(() => [asset, backgroundAsset].filter((item): item is ToolcraftMediaAsset => Boolean(item)), [asset, backgroundAsset]);
@@ -159,8 +160,8 @@ export function ChromishCanvas(): React.JSX.Element {
   const detail = stringValue(useToolcraftValue(chromishTargets.detail), "fine") as ChromishDetail;
   const depth = numeric(useToolcraftValue(chromishTargets.depth), 0.24);
   const bevel = numeric(useToolcraftValue(chromishTargets.bevel), 0.04);
-  const material = stringValue(useToolcraftValue(chromishTargets.material), "diamond") as ChromishRenderParameters["material"];
-  const primaryColor = stringValue(useToolcraftValue(chromishTargets.primaryColor), "#FF5A4F");
+  const material = stringValue(useToolcraftValue(chromishTargets.material), "chrome") as ChromishRenderParameters["material"];
+  const primaryColor = stringValue(useToolcraftValue(chromishTargets.primaryColor), "#E6ECEF");
   const secondaryColor = stringValue(useToolcraftValue(chromishTargets.secondaryColor), "#FFD429");
   const roughness = numeric(useToolcraftValue(chromishTargets.roughness), 0.12);
   const reflectionContrast = numeric(useToolcraftValue(chromishTargets.reflectionContrast), 1.25);
@@ -190,7 +191,7 @@ export function ChromishCanvas(): React.JSX.Element {
     cameraUp: safeCameraVector(orbit.up, [0, 1, 0]),
     exposure,
     includeBackground,
-    includeBackgroundImage: Boolean(backgroundAsset && backgroundUrl),
+    includeBackgroundImage: backgroundImageReady,
     loopPhaseRadians: loopProgress * Math.PI * 2,
     material,
     primaryColor,
@@ -199,7 +200,7 @@ export function ChromishCanvas(): React.JSX.Element {
     rotationRadians,
     secondaryColor,
     studioRotationRadians: (studioRotation * Math.PI) / 180,
-  }), [background, backgroundAsset, backgroundImageSize, backgroundUrl, exposure, includeBackground, loopProgress, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
+  }), [background, backgroundImageReady, backgroundImageSize, exposure, includeBackground, loopProgress, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
   parametersRef.current = parameters;
 
   React.useEffect(() => {
@@ -278,11 +279,16 @@ export function ChromishCanvas(): React.JSX.Element {
   React.useEffect(() => {
     if (!renderer) return;
     let active = true;
+    setBackgroundImageReady(false);
     void renderer.setBackgroundImage(
       backgroundUrl ?? null,
       backgroundAsset?.assetKind === "image" ? backgroundAsset.transform : undefined,
     ).then(
-      (size) => { if (active) setBackgroundImageSize(size); },
+      (size) => {
+        if (!active) return;
+        setBackgroundImageSize(size);
+        setBackgroundImageReady(Boolean(backgroundUrl));
+      },
       (error: unknown) => { if (active) setFeedback(error instanceof Error ? error.message : "The background image could not be loaded."); },
     );
     return () => { active = false; };
@@ -361,6 +367,7 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-exposure={exposure}
         data-chromish-include-background={includeBackground ? "true" : "false"}
         data-chromish-background-image={backgroundAsset?.fileName ?? "none"}
+        data-chromish-background-image-ready={backgroundImageReady ? "true" : "false"}
         data-chromish-background-image-size={backgroundImageSize.join("x")}
         data-chromish-background-transform={backgroundAsset?.assetKind === "image" ? JSON.stringify(backgroundAsset.transform ?? {}) : "{}"}
         data-chromish-material={material}

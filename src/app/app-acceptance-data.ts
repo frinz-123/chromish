@@ -107,8 +107,8 @@ export const appProductReadiness: ToolcraftProductReadiness = {
   ],
   mode: "product",
   productName: "Chromish",
-  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with five switchable procedural materials and an image-based environment.",
-  requestedBehavior: "Import an SVG and background image, test diamond/glass transparency and refraction or colorable plastic/fire/playdough, orbit the extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
+  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with six switchable procedural materials and an optional image-based environment.",
+  requestedBehavior: "Import an SVG, keep the original chrome or choose diamond, glass, plastic, fire, or playdough, optionally upload a background image, orbit the extrusion, and export images, video, GLB, or a full-fidelity vgpu kit.",
   viewInteraction: {
     mode: "orbit",
     orientationTargets: [chromishTargets.orbit],
@@ -178,11 +178,11 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
     userAction: "Drag a gizmo axis, snap an axis, drag the object, drag a canvas miss, then undo and reset.",
   },
   control(chromishTargets.material, "select", {
-    expectedObservable: "Each of Diamond, Shiny plastic, Glass, Fire, and Playdough produces a distinct visible vgpu finish.",
-    optionCoverage: ["diamond", "plastic", "glass", "fire", "playdough"],
+    expectedObservable: "Each of Chrome, Diamond, Shiny plastic, Glass, Fire, and Playdough produces a distinct visible vgpu finish.",
+    optionCoverage: ["chrome", "diamond", "plastic", "glass", "fire", "playdough"],
   }),
   control(chromishTargets.primaryColor, "color", {
-    expectedObservable: "Primary changes the visible body color for plastic, fire, and playdough while remaining absent for diamond and glass.",
+    expectedObservable: "Primary changes the visible tint or body color for chrome, plastic, fire, and playdough while remaining absent for diamond and glass.",
   }),
   control(chromishTargets.secondaryColor, "color", {
     expectedObservable: "Accent changes the visible highlight for plastic and fire while remaining absent for other materials.",
@@ -205,9 +205,9 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
   }),
   control(chromishTargets.backgroundImage, "fileDrop", {
     evidence: "media-lifecycle",
-    expectedObservable: "The default Unsplash image appears behind the object, can be replaced, rotated, flipped, removed, and restored by Reset while preview and export consume the transformed image.",
-    mediaLifecycleCoverage: ["upload", "remove", "reset", "default-remove", "default-reset", "rotate", "flip", "transform-output"],
-    userAction: "Replace, rotate, flip, remove, and Reset the background image through the visible Toolcraft media control.",
+    expectedObservable: "An uploaded image appears behind the object, can be rotated, flipped, and removed, while preview and export consume the transformed image; Reset returns to the selected fallback color.",
+    mediaLifecycleCoverage: ["upload", "remove", "reset", "rotate", "flip", "transform-output"],
+    userAction: "Upload, rotate, flip, remove, and Reset the background image through the visible Toolcraft media control.",
   }),
   control(chromishTargets.imageFormat, "select", {
     evidence: "exported-bytes",

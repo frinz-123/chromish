@@ -118,10 +118,11 @@ export const chromishControlSections = [
     controls: {
       material: {
         applicability: always,
-        defaultValue: "diamond",
+        defaultValue: "chrome",
         description: "Switch between refractive, glossy, emissive, and soft sculpted finishes.",
         label: "Finish",
         options: [
+          { label: "Chrome", value: "chrome" },
           { label: "Diamond", value: "diamond" },
           { label: "Shiny plastic", value: "plastic" },
           { label: "Glass", value: "glass" },
@@ -135,8 +136,8 @@ export const chromishControlSections = [
         type: "select",
       },
       primaryColor: {
-        applicability: { all: [{ oneOf: ["plastic", "fire", "playdough"], target: chromishTargets.material }], mode: "conditional" },
-        defaultValue: "#FF5A4F",
+        applicability: { all: [{ oneOf: ["chrome", "plastic", "fire", "playdough"], target: chromishTargets.material }], mode: "conditional" },
+        defaultValue: "#E6ECEF",
         label: "Primary",
         orderRole: "color",
         semanticGroup: "material-colors",
@@ -157,7 +158,7 @@ export const chromishControlSections = [
         type: "color",
       },
       roughness: {
-        applicability: { all: [{ oneOf: ["plastic", "playdough"], target: chromishTargets.material }], mode: "conditional" },
+        applicability: { all: [{ oneOf: ["chrome", "plastic", "playdough"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 0.12,
         label: "Roughness",
         max: 0.45,
@@ -171,7 +172,7 @@ export const chromishControlSections = [
         type: "slider",
       },
       reflectionContrast: {
-        applicability: { all: [{ oneOf: ["diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
+        applicability: { all: [{ oneOf: ["chrome", "diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 1.25,
         label: "Reflection contrast",
         max: 2,
@@ -185,7 +186,7 @@ export const chromishControlSections = [
         type: "slider",
       },
       studioRotation: {
-        applicability: { all: [{ oneOf: ["diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
+        applicability: { all: [{ oneOf: ["chrome", "diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 18,
         label: "Studio rotation",
         max: 360,

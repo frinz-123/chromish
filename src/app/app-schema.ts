@@ -2,7 +2,6 @@ import { defineToolcraft } from "@/toolcraft/runtime";
 
 import { appIdentity } from "./app-identity";
 import { chromishControlSections } from "./chromish/control-sections";
-import { defaultBackgroundDataUrl } from "./chromish/default-background";
 
 export const appSchema = defineToolcraft({
   canvas: {
@@ -15,16 +14,6 @@ export const appSchema = defineToolcraft({
   },
   export: { png: { background: "include" } },
   identity: appIdentity,
-  media: {
-    defaultAssets: [{
-      assetKind: "image",
-      dataUrl: defaultBackgroundDataUrl,
-      fileName: "photo-1638742385167-96fc60e12f59.png",
-      id: "chromish-default-background",
-      mimeType: "image/png",
-      sourceTarget: "media.backgroundImage",
-    }],
-  },
   panels: {
     controls: {
       sections: chromishControlSections,

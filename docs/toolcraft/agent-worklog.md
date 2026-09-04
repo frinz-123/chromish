@@ -4,7 +4,7 @@
 
 Mode: product
 
-Chromish is an SVG-to-material Toolcraft product with a retained vgpu renderer, five selectable finishes, a seven-second playback timeline, runtime-owned image/video export, and downloadable GLB/vgpu kits.
+Chromish is an SVG-to-material Toolcraft product with a retained vgpu renderer, the original chrome plus five alternate finishes, an optional uploaded environment image, a seven-second playback timeline, runtime-owned image/video export, and downloadable GLB/vgpu kits.
 
 The first product delivery uses `npm run verify:delivery`. Later feature work uses focused acceptance. A localized performance complaint may authorize one targeted iteration; only exact request authority permits measured targeted performance. A complete performance audit remains separately user-authorized through `npm run verify:perf`.
 
@@ -149,6 +149,24 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 - Performance intent: ordinary-product-work; these are correctness repairs and do not authorize measured performance.
 - Verification: Production `npm run build`, focused schema/product/shader/kit tests, code health, and material feature selection; no repeated delivery or measured performance run.
 - Risks: Browser acceptance still depends on a locally available Playwright Chromium binary; the container's CDN policy may prevent downloading it.
+
+### Delivery 6 — Restore chrome and upload-only backgrounds
+
+- Request: Restore the original Chrome material, remove the hardcoded background image, keep user background upload, and make the default background color work.
+- Task type: Later Tier 3 focused material-schema, media-default, background fallback, renderer, acceptance, and export correction.
+- User-visible result: Chrome is again the default finish alongside the five alternatives; the app starts without an image; Background color is the active default; and an uploaded image replaces that color only after its GPU texture is ready.
+- Source/reference checked: The user's reported behavior, original chrome WGSL branch, current Toolcraft background/media contract, current vgpu texture lifecycle, and existing preview/export state mapping.
+- Reference inputs: No new visual or motion input; this request restores previously approved original behavior and changes environment ownership to upload-only.
+- Docs/contracts read: `workflow.md`, `decision-contract.md`, `core/runtime-boundary.md`, `core/control-selection.md`, `core/layout.md`, `core/performance.md`, `core/setup-export.md`, `core/media-upload.md`, `schema-reference.md`, `component-rules.md`, `renderer-technique.md`, `performance.md`, and `acceptance-testing.md`.
+- Contract rules applied: canvas-surface-preserved, controls-product-coverage, output-export-required, persistence-policy-explicit, acceptance-product-observable, renderer-technique-inventory, and workflow-required.
+- View interaction intent: Orbit remains unchanged across Chrome and every alternative finish.
+- Interaction ownership: FileDrop remains the sole owner of optional image import/removal/transforms; the built-in Background color remains the panel-owned fallback; canvas owns no duplicate background action.
+- Decision: Restore the original procedural chrome equations as material index zero and schema default; remove `media.defaultAssets`; retain the Environment Image uploader; gate image compositing on successful texture readiness rather than asset metadata; fall back immediately to the runtime Background color after removal, reset, loading, or failure.
+- Alternatives rejected: Keeping Chrome as an undocumented diamond approximation, retaining a hidden bundled image, using a remote image URL, disabling the standard Background color, and treating an unresolved presentation URL as a ready texture.
+- State/output mapping: `material.type=chrome` selects the original studio/reflection/Fresnel branch; `appearance.background` feeds preview/export when no ready image exists; successful `media.backgroundImage` upload switches the shared tone-map/refraction texture; removal/reset returns to the color path.
+- Performance intent: ordinary-product-work; this restores constant-cost branches and removes startup media decode, so no measured performance authority exists.
+- Verification: Focused schema/product/renderer/media/export tests, production build, code health, and material/background feature selection only; no repeated delivery or measured performance run.
+- Risks: Browser visual proof still requires an available Chromium binary; failed image decode intentionally leaves the selected background color visible and reports feedback.
 
 ## Evidence
 

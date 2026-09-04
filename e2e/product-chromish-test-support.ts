@@ -217,16 +217,17 @@ export async function proveControlChange(
 
 export function applicabilityCases(target: string): readonly ToolcraftControlApplicabilityCase[] {
   const materialVisibility: Record<string, readonly string[]> = {
-    "chrome.exposure": ["diamond", "plastic", "glass", "fire", "playdough"],
-    "chrome.reflectionContrast": ["diamond", "glass"],
-    "chrome.roughness": ["plastic", "playdough"],
-    "chrome.studioRotation": ["diamond", "glass"],
-    "material.primaryColor": ["plastic", "fire", "playdough"],
+    "chrome.exposure": ["chrome", "diamond", "plastic", "glass", "fire", "playdough"],
+    "chrome.reflectionContrast": ["chrome", "diamond", "glass"],
+    "chrome.roughness": ["chrome", "plastic", "playdough"],
+    "chrome.studioRotation": ["chrome", "diamond", "glass"],
+    "material.primaryColor": ["chrome", "plastic", "fire", "playdough"],
     "material.secondaryColor": ["plastic", "fire"],
   };
   const visibleMaterials = materialVisibility[target];
   if (visibleMaterials) {
     return [
+      ["Chrome", "chrome"],
       ["Diamond", "diamond"],
       ["Shiny plastic", "plastic"],
       ["Glass", "glass"],
