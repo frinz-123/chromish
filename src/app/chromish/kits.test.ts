@@ -29,10 +29,12 @@ const snapshot: ChromishRuntimeSnapshot = {
   mesh,
   parameters: {
     background: "#F7F7F5",
+    backgroundImageSize: [1632, 918],
     cameraPosition: [0.15, 0.1, 4.5],
     cameraUp: [0, 1, 0],
     exposure: 1.1,
     includeBackground: true,
+    includeBackgroundImage: true,
     material: "plastic",
     primaryColor: "#E6ECEF",
     reflectionContrast: 1.4,

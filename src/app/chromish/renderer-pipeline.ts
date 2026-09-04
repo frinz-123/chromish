@@ -64,7 +64,7 @@ export const rendererPipelineRegistration =
           relationship: "quadratic",
         },
         id: "chrome-hdr",
-        inputs: ["svg-extrusion", "material.*", "chrome.*", "view.orbit", "motion.*", "timeline", "canvas.renderScale"],
+        inputs: ["svg-extrusion", "media.backgroundImage", "material.*", "chrome.*", "view.orbit", "motion.*", "timeline", "canvas.renderScale"],
         invalidatedBy: ["initial-render", "control-change", "control-drag", "animation-frame", "timeline-playback", "timeline-scrub", "viewport-drag", "viewport-zoom"],
         kind: "rasterize",
         lifecycle: { cache: "retained-resource", resourceScope: "renderer" },
@@ -108,6 +108,7 @@ export const rendererPipelineRegistration =
     interactionInvalidation: [
       { interaction: "initial-render", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["canvas"] },
       { interaction: "media-import", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["media.svgSource"] },
+      { interaction: "media-import", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["media.backgroundImage"] },
       { interaction: "control-change", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["svg.detail", "geometry.depth", "geometry.bevel"] },
       { interaction: "control-drag", invalidates: ["svg-extrusion", "chrome-hdr", "tone-map"], targets: ["geometry.depth", "geometry.bevel"] },
       { interaction: "control-change", invalidates: ["chrome-hdr", "tone-map"], mustNotInvalidate: ["svg-extrusion"], targets: ["material.type", "material.primaryColor", "material.secondaryColor", "chrome.roughness", "chrome.reflectionContrast", "chrome.studioRotation", "chrome.exposure", "motion.direction", "motion.startAngle", "view.orbit", "appearance.background", "export.includeBackground"] },

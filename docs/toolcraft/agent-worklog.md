@@ -12,7 +12,7 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 
 ### Renderer
 
-- Decision: Render exclusively with a retained two-pass vgpu WebGPU renderer using inline WGSL, an HDR color target, explicit depth, and filmic tone mapping.
+- Decision: Render exclusively with a retained two-pass vgpu WebGPU renderer using inline WGSL, a source-scoped environment texture, an HDR color target, explicit depth, and filmic tone mapping.
 - Reason: The requested chrome look depends on stable reflection bands and deterministic GPU frames without a WebGL fallback.
 - Evidence: `src/app/chromish/vgpu-renderer.ts`, `src/app/chromish/renderer-pipeline.ts`, and `src/app/app-performance.ts`.
 
@@ -42,7 +42,7 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 
 ### Controls
 
-- Decision: Use built-in Toolcraft controls grouped by SVG, geometry, material, motion, background, image export, and video export entities; material-specific colors and optical parameters appear only for applicable finishes.
+- Decision: Use built-in Toolcraft controls grouped by SVG, geometry, material, motion, environment image, background, image export, and video export entities; material-specific colors and optical parameters appear only for applicable finishes.
 - Reason: Every requested setting maps directly to runtime state and visible product output without custom control UI.
 - Evidence: `src/app/chromish/control-sections.ts` and `appControlSectionInventory`.
 
@@ -112,7 +112,25 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 - State/output mapping: `material.type`, primary/accent colors, roughness, reflection contrast, studio rotation, exposure, timeline phase, and orbit pose feed retained shader uniforms shared by preview and runtime export; GLB maps the selected finish to a portable physical-material approximation and the vgpu kit preserves the exact shader branch.
 - Performance intent: ordinary-product-work; the material selector changes a constant-cost shader branch and does not authorize measured performance.
 - Verification: Focused schema/product, vgpu mock, kit, typecheck, code-health, feature-browser, and screenshot checks only; the existing initial delivery receipt is not rerun.
-- Risks: Procedural refraction samples the studio environment rather than screen-space scene geometry, and portable GLB cannot reproduce the exact fire turbulence or diamond dispersion.
+- Risks: Refraction is a screen-space environment approximation rather than traced scene geometry, and portable GLB cannot reproduce the exact fire turbulence or diamond dispersion.
+
+### Delivery 4 — Uploadable refraction environment
+
+- Request: Allow a background image for testing transparency, reflection, and refraction, with the supplied Unsplash image as the default.
+- Task type: Later Tier 3 media source, default asset, retained texture, shader sampling, export, persistence, acceptance, and browser feature work.
+- User-visible result: A new Environment Image uploader starts with the supplied 1632×918 pastel landscape, supports replacement/removal/rotate/flip/reset, fills the canvas by cover-cropping, and visibly passes through distorted diamond and glass surfaces.
+- Source/reference checked: The user-supplied image attachment corresponding to Unsplash photo `photo-1638742385167-96fc60e12f59`, current Toolcraft image media lifecycle, existing vgpu renderer, Toolcraft contracts, and vgpu texture/device documentation.
+- Reference inputs: The supplied static 1632×918 background image is embedded as a Toolcraft default image asset; it is visual source content rather than a motion reference.
+- Docs/contracts read: `workflow.md`, `core/control-selection.md`, `core/layout.md`, `core/runtime-boundary.md`, `core/performance.md`, `core/setup-export.md`, `core/media-upload.md`, `schema-reference.md`, `component-rules.md`, `renderer-technique.md`, `performance.md`, and `acceptance-testing.md`.
+- Contract rules applied: canvas-no-app-ui, canvas-surface-preserved, controls-product-coverage, controls-section-inventory-required, output-export-required, persistence-policy-explicit, renderer-technique-inventory, acceptance-product-observable, and workflow-required.
+- View interaction intent: Orbit remains unchanged; the environment is a non-interactive renderer input and does not create a second camera or canvas gesture.
+- Interaction ownership: The panel exclusively owns environment upload, removal, and transforms through built-in FileDrop actions; canvas continues to own only object orbit and viewport movement.
+- Decision: Store the supplied image through `media.defaultAssets`, resolve all replacement assets through Toolcraft presentation URLs, transform the bitmap before one retained GPU upload, cover-crop it in shader coordinates, and sample it with material-dependent offsets for diamond and glass refraction.
+- Alternatives rejected: A remote hotlink, CSS-only background, runtime-default-media overlay, custom upload UI, localStorage image bytes, or a decorative background that export/refraction cannot consume.
+- State/output mapping: `media.backgroundImage` owns the durable image and transforms; the canvas resolves its repository URL and updates one retained vgpu texture; preview and runtime export share cover coordinates while diamond/glass sample displaced UVs and the tone pass composites the same image behind transparent fragments.
+- Performance intent: ordinary-product-work; image decode/upload happens only on source or transform change and does not authorize measured performance.
+- Verification: Focused schema/product/media, vgpu mock, kit, WGSL reflection, typecheck, code-health, and feature-browser checks only; the initial delivery receipt is not rerun.
+- Risks: The environment is a 2D refraction plate rather than a cubemap, and the standalone downloadable vgpu kit keeps its portable neutral fallback until environment bytes are packaged separately.
 
 ## Evidence
 

@@ -90,12 +90,25 @@ describe("Chromish appSchema", () => {
       "Geometry",
       "Material",
       "Motion",
+      "Environment Image",
       "Image Export",
       "Video Export",
       "Export",
     ]);
     expect(appSchema.panels.layers).toBeUndefined();
     expect(appSchema.panels.timeline?.enabled).toBe(true);
+    expect(appSchema.media.defaultAssets).toEqual([
+      expect.objectContaining({
+        assetKind: "image",
+        fileName: "photo-1638742385167-96fc60e12f59.png",
+        sourceTarget: "media.backgroundImage",
+      }),
+    ]);
+    expect(appSchema.media.defaultAssets[0]?.dataUrl).toMatch(/^data:image\/png;base64,/u);
+    const encoded = appSchema.media.defaultAssets[0]?.dataUrl.split(",")[1] ?? "";
+    const bytes = Buffer.from(encoded, "base64");
+    expect(bytes.readUInt32BE(16)).toBe(1632);
+    expect(bytes.readUInt32BE(20)).toBe(918);
   });
 
   it("enables playback without exposing keyframe editing", () => {

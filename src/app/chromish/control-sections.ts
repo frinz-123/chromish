@@ -2,6 +2,7 @@ import type { ToolcraftControlSectionSchema } from "@/toolcraft/runtime";
 
 export const chromishTargets = {
   background: "appearance.background",
+  backgroundImage: "media.backgroundImage",
   bevel: "geometry.bevel",
   depth: "geometry.depth",
   detail: "svg.detail",
@@ -250,6 +251,27 @@ export const chromishControlSections = [
     },
     id: "motion",
     title: "Motion",
+  },
+  {
+    controls: {
+      backgroundImage: {
+        accept: "image/png,image/jpeg,image/webp",
+        applicability: always,
+        assetKind: "image",
+        defaultValue: null,
+        description: "Use a photo behind the object to inspect transparency, reflections, and refraction.",
+        hardMaxItems: 1,
+        label: false,
+        multiple: false,
+        orderRole: "input",
+        performanceReason: "Image replacement decodes and uploads one bounded texture outside the frame loop.",
+        performanceRole: "responsiveness",
+        target: chromishTargets.backgroundImage,
+        type: "fileDrop",
+      },
+    },
+    id: "environment-image",
+    title: "Environment Image",
   },
   {
     controls: {

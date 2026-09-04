@@ -19,6 +19,7 @@ import {
   type Surface,
   type Target,
 } from "vgpu";
+import type { Texture } from "vgpu/core";
 
 import type { ChromishCpuMesh } from "./svg-mesh";
 
@@ -29,11 +30,15 @@ struct SceneUniforms {
   tintRoughness: vec4f,
   secondaryColor: vec4f,
   controls: vec4f,
+  backgroundInfo: vec4f,
+  backgroundTile: vec4f,
   cameraPosition: vec4f,
   tile: vec4f,
 }
 
 @group(0) @binding(0) var<uniform> scene: SceneUniforms;
+@group(0) @binding(1) var backgroundTexture: texture_2d<f32>;
+@group(0) @binding(2) var backgroundSampler: sampler;
 
 struct VertexOutput {
   @builtin(position) position: vec4f,
@@ -84,6 +89,23 @@ fn fireNoise(position: vec3f, time: f32) -> f32 {
   return 0.5 + 0.25 * first + 0.25 * second;
 }
 
+fn backgroundUv(fragmentPosition: vec2f) -> vec2f {
+  let tilePixels = scene.backgroundInfo.xy * scene.backgroundTile.zw;
+  let localUv = fragmentPosition / max(tilePixels, vec2f(1.0));
+  let fullUv = scene.backgroundTile.xy + localUv * scene.backgroundTile.zw;
+  let outputAspect = scene.backgroundInfo.x / max(scene.backgroundInfo.y, 1.0);
+  let imageAspect = scene.backgroundInfo.z / max(scene.backgroundInfo.w, 1.0);
+  var covered = fullUv;
+  if (imageAspect > outputAspect) {
+    let visible = outputAspect / imageAspect;
+    covered.x = 0.5 + (fullUv.x - 0.5) * visible;
+  } else {
+    let visible = imageAspect / outputAspect;
+    covered.y = 0.5 + (fullUv.y - 0.5) * visible;
+  }
+  return covered;
+}
+
 @fragment fn fs_main(input: VertexOutput) -> @location(0) vec4f {
   let n = normalize(input.worldNormal);
   let v = normalize(scene.cameraPosition.xyz - input.worldPosition);
@@ -105,7 +127,8 @@ fn fireNoise(position: vec3f, time: f32) -> f32 {
       studio(rotateY(refracted, 0.035), contrast, studioAngle).b
     );
     let brilliance = pow(max(dot(reflect(-v, n), normalize(vec3f(-0.4, 0.8, 0.5))), 0.0), 42.0);
-    return vec4f(dispersion * 0.48 + environment * fresnel * 1.45 + brilliance * vec3f(4.0), 0.3 + fresnel * 0.68);
+    let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.045).rgb;
+    return vec4f(mix(refractedBackdrop, dispersion, 0.28) + environment * fresnel * 1.2 + brilliance * vec3f(4.0), 0.3 + fresnel * 0.68);
   }
   if (material < 1.5) {
     let light = normalize(vec3f(-0.45, 0.75, 0.6));
@@ -116,7 +139,8 @@ fn fireNoise(position: vec3f, time: f32) -> f32 {
   if (material < 2.5) {
     let refracted = refract(-v, n, 1.0 / 1.52);
     let glassBody = studio(refracted, contrast * 0.75, studioAngle) * vec3f(0.7, 0.9, 1.0);
-    return vec4f(glassBody * 0.22 + environment * fresnel * 1.1 + vec3f(0.04, 0.08, 0.1), 0.16 + fresnel * 0.72);
+    let refractedBackdrop = textureSample(backgroundTexture, backgroundSampler, backgroundUv(input.position.xy) + refracted.xy * 0.025).rgb;
+    return vec4f(mix(refractedBackdrop, glassBody, 0.16) + environment * fresnel + vec3f(0.02, 0.05, 0.07), 0.16 + fresnel * 0.72);
   }
   if (material < 3.5) {
     let turbulence = fireNoise(input.worldPosition, time);
@@ -134,13 +158,17 @@ fn fireNoise(position: vec3f, time: f32) -> f32 {
 export const TONE_MAP_SHADER_WGSL = /* wgsl */ `
 @group(0) @binding(0) var sceneTexture: texture_2d<f32>;
 @group(0) @binding(1) var sceneSampler: sampler;
+@group(0) @binding(2) var backgroundTexture: texture_2d<f32>;
+@group(0) @binding(3) var backgroundSampler: sampler;
 
 struct ToneUniforms {
   background: vec4f,
   exposureAndMode: vec4f,
+  backgroundInfo: vec4f,
+  backgroundTile: vec4f,
 }
 
-@group(0) @binding(2) var<uniform> tone: ToneUniforms;
+@group(0) @binding(4) var<uniform> tone: ToneUniforms;
 
 fn aces(value: vec3f) -> vec3f {
   let a = 2.51;
@@ -156,7 +184,20 @@ fn aces(value: vec3f) -> vec3f {
   let mapped = aces(sampleValue.rgb * tone.exposureAndMode.x);
   let alpha = clamp(sampleValue.a, 0.0, 1.0);
   if (tone.exposureAndMode.y > 0.5) {
-    return vec4f(mix(tone.background.rgb, mapped, alpha), 1.0);
+    var backdrop = tone.background.rgb;
+    if (tone.exposureAndMode.z > 0.5) {
+      let fullUv = tone.backgroundTile.xy + uv * tone.backgroundTile.zw;
+      let outputAspect = tone.backgroundInfo.x / max(tone.backgroundInfo.y, 1.0);
+      let imageAspect = tone.backgroundInfo.z / max(tone.backgroundInfo.w, 1.0);
+      var covered = fullUv;
+      if (imageAspect > outputAspect) {
+        covered.x = 0.5 + (fullUv.x - 0.5) * (outputAspect / imageAspect);
+      } else {
+        covered.y = 0.5 + (fullUv.y - 0.5) * (imageAspect / outputAspect);
+      }
+      backdrop = textureSample(backgroundTexture, backgroundSampler, covered).rgb;
+    }
+    return vec4f(mix(backdrop, mapped, alpha), 1.0);
   }
   return vec4f(mapped * alpha, alpha);
 }
@@ -164,10 +205,12 @@ fn aces(value: vec3f) -> vec3f {
 
 export type ChromishRenderParameters = Readonly<{
   background: string;
+  backgroundImageSize: readonly [number, number];
   cameraPosition: readonly [number, number, number];
   cameraUp: readonly [number, number, number];
   exposure: number;
   includeBackground: boolean;
+  includeBackgroundImage: boolean;
   material: "diamond" | "plastic" | "glass" | "fire" | "playdough";
   primaryColor: string;
   reflectionContrast: number;
@@ -227,6 +270,9 @@ export class ChromishVgpuRenderer {
   private readonly exportHdr: Target;
   private readonly exportLdr: Target;
   private readonly toneMap: Effect;
+  private readonly backgroundSampler: GPUSampler;
+  private backgroundTexture: Texture;
+  private backgroundLoadGeneration = 0;
   private meshGeometry: Geometry | null = null;
   private chromeDraw: Draw | null = null;
   private disposed = false;
@@ -238,6 +284,8 @@ export class ChromishVgpuRenderer {
     exportHdr: Target,
     exportLdr: Target,
     toneMap: Effect,
+    backgroundSampler: GPUSampler,
+    backgroundTexture: Texture,
   ) {
     this.gpu = gpu;
     this.canvasSurface = canvasSurface;
@@ -245,6 +293,8 @@ export class ChromishVgpuRenderer {
     this.exportHdr = exportHdr;
     this.exportLdr = exportLdr;
     this.toneMap = toneMap;
+    this.backgroundSampler = backgroundSampler;
+    this.backgroundTexture = backgroundTexture;
   }
 
   static async create(canvas: HTMLCanvasElement, size: readonly [number, number]): Promise<ChromishVgpuRenderer> {
@@ -274,20 +324,32 @@ export class ChromishVgpuRenderer {
       label: "chromish-export-ldr",
       size: [1, 1],
     });
+    const backgroundSampler = sampler(gpu, { magFilter: "linear", minFilter: "linear" });
+    const backgroundTexture = gpu.device.createTexture({
+      format: "rgba8unorm",
+      label: "chromish-background-placeholder",
+      size: [1, 1],
+      usage: ["copy_dst", "texture_binding"],
+    });
+    gpu.gpu.queue.writeTexture({ texture: backgroundTexture.gpu }, new Uint8Array([247, 247, 245, 255]), { bytesPerRow: 4 }, [1, 1]);
     const toneMap = effect(gpu, TONE_MAP_SHADER_WGSL, {
       label: "chromish-tone-map",
       set: {
+        backgroundSampler,
+        backgroundTexture,
         sceneSampler: sampler(gpu, { magFilter: "linear", minFilter: "linear" }),
         sceneTexture: previewHdr,
         tone: {
           background: [0.93, 0.93, 0.91, 1],
           exposureAndMode: [1, 1, 0, 0],
+          backgroundInfo: [1, 1, 1, 1],
+          backgroundTile: [0, 0, 1, 1],
         },
       },
     });
     gpu.onError((error) => console.error("Chromish vgpu error", error));
     await toneMap.compile(exportLdr);
-    return new ChromishVgpuRenderer(gpu, canvasSurface, previewHdr, exportHdr, exportLdr, toneMap);
+    return new ChromishVgpuRenderer(gpu, canvasSurface, previewHdr, exportHdr, exportLdr, toneMap, backgroundSampler, backgroundTexture);
   }
 
   get size(): readonly [number, number] {
@@ -314,9 +376,71 @@ export class ChromishVgpuRenderer {
       geometry: this.meshGeometry,
       label: "chromish-chrome",
       shader: CHROME_SHADER_WGSL,
+      set: {
+        backgroundSampler: this.backgroundSampler,
+        backgroundTexture: this.backgroundTexture,
+      },
     });
     void this.chromeDraw.compile(this.previewHdr);
     void this.chromeDraw.compile(this.exportHdr);
+  }
+
+  async setBackgroundImage(
+    url: string | null,
+    transform: Readonly<{ flipHorizontal?: boolean; flipVertical?: boolean; rotationDeg?: 0 | 90 | 180 | 270 }> = {},
+  ): Promise<readonly [number, number]> {
+    if (this.disposed) return [1, 1];
+    const generation = ++this.backgroundLoadGeneration;
+    if (!url) {
+      const nextTexture = this.gpu.device.createTexture({
+        format: "rgba8unorm",
+        label: "chromish-background-placeholder",
+        size: [1, 1],
+        usage: ["copy_dst", "texture_binding"],
+      });
+      this.gpu.gpu.queue.writeTexture({ texture: nextTexture.gpu }, new Uint8Array([247, 247, 245, 255]), { bytesPerRow: 4 }, [1, 1]);
+      const previous = this.backgroundTexture;
+      this.backgroundTexture = nextTexture;
+      this.chromeDraw?.set({ backgroundTexture: nextTexture });
+      this.toneMap.set({ backgroundTexture: nextTexture });
+      previous.destroy();
+      return [1, 1];
+    }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Could not read the background image.");
+    const bitmap = await createImageBitmap(await response.blob());
+    try {
+      if (this.disposed || generation !== this.backgroundLoadGeneration) return [1, 1];
+      const rotated = transform.rotationDeg === 90 || transform.rotationDeg === 270;
+      const canvas = document.createElement("canvas");
+      canvas.width = rotated ? bitmap.height : bitmap.width;
+      canvas.height = rotated ? bitmap.width : bitmap.height;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("A 2D canvas is required to transform the background image.");
+      context.translate(canvas.width / 2, canvas.height / 2);
+      context.rotate(((transform.rotationDeg ?? 0) * Math.PI) / 180);
+      context.scale(transform.flipHorizontal ? -1 : 1, transform.flipVertical ? -1 : 1);
+      context.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+      const nextTexture = this.gpu.device.createTexture({
+        format: "rgba8unorm",
+        label: "chromish-background-image",
+        size: [canvas.width, canvas.height],
+        usage: ["copy_dst", "texture_binding"],
+      });
+      this.gpu.gpu.queue.copyExternalImageToTexture(
+        { source: canvas },
+        { texture: nextTexture.gpu },
+        [canvas.width, canvas.height],
+      );
+      const previous = this.backgroundTexture;
+      this.backgroundTexture = nextTexture;
+      this.chromeDraw?.set({ backgroundTexture: nextTexture });
+      this.toneMap.set({ backgroundTexture: nextTexture });
+      previous.destroy();
+      return [canvas.width, canvas.height];
+    } finally {
+      bitmap.close();
+    }
   }
 
   resize(width: number, height: number): void {
@@ -332,8 +456,13 @@ export class ChromishVgpuRenderer {
     hdr: Target,
   ): void {
     const { camera, model, viewProjection } = matricesFor(fullSize[0], fullSize[1], parameters);
+    const tileLeft = (tile[0] - tile[2] + 1) * 0.5;
+    const tileTop = (1 - (tile[1] + tile[3])) * 0.5;
+    const backgroundTile = [tileLeft, tileTop, tile[2], tile[3]] as const;
     this.chromeDraw?.set({
       scene: {
+        backgroundInfo: [fullSize[0], fullSize[1], parameters.backgroundImageSize[0], parameters.backgroundImageSize[1]],
+        backgroundTile,
         cameraPosition: [...camera.position.toArray(), 1],
         controls: [parameters.reflectionContrast, parameters.studioRotationRadians, chromishMaterialIndex(parameters.material), parameters.rotationRadians],
         model: new Float32Array(model.elements),
@@ -347,7 +476,9 @@ export class ChromishVgpuRenderer {
       sceneTexture: hdr,
       tone: {
         background: hexToLinearRgba(parameters.background),
-        exposureAndMode: [parameters.exposure, parameters.includeBackground ? 1 : 0, 0, 0],
+        backgroundInfo: [fullSize[0], fullSize[1], parameters.backgroundImageSize[0], parameters.backgroundImageSize[1]],
+        backgroundTile,
+        exposureAndMode: [parameters.exposure, parameters.includeBackground ? 1 : 0, parameters.includeBackgroundImage ? 1 : 0, 0],
       },
     });
   }
@@ -422,7 +553,9 @@ export class ChromishVgpuRenderer {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.backgroundLoadGeneration += 1;
     this.meshGeometry?.destroy();
+    this.backgroundTexture.destroy();
     this.canvasSurface.dispose();
     this.gpu.dispose();
   }

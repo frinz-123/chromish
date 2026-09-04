@@ -37,6 +37,10 @@ function selectSvgAsset(state: ToolcraftState): ToolcraftMediaAsset | null {
   return state.mediaAssets.find((asset) => asset.sourceTarget === chromishTargets.source) ?? null;
 }
 
+function selectBackgroundAsset(state: ToolcraftState): ToolcraftMediaAsset | null {
+  return state.mediaAssets.find((asset) => asset.sourceTarget === chromishTargets.backgroundImage) ?? null;
+}
+
 function selectTimeline(state: ToolcraftState) {
   return {
     currentTimeSeconds: state.timeline.currentTimeSeconds,
@@ -143,10 +147,13 @@ export function ChromishCanvas(): React.JSX.Element {
   const [sourceSvg, setSourceSvg] = React.useState("");
   const [feedback, setFeedback] = React.useState<string | null>(null);
   const [gpuUnavailable, setGpuUnavailable] = React.useState(false);
+  const [backgroundImageSize, setBackgroundImageSize] = React.useState<readonly [number, number]>([1, 1]);
   const asset = useToolcraftSelector(selectSvgAsset);
-  const assets = React.useMemo(() => asset ? [asset] : [], [asset]);
+  const backgroundAsset = useToolcraftSelector(selectBackgroundAsset);
+  const assets = React.useMemo(() => [asset, backgroundAsset].filter((item): item is ToolcraftMediaAsset => Boolean(item)), [asset, backgroundAsset]);
   const presentationUrls = useToolcraftMediaPresentationUrls(assets);
   const url = asset ? presentationUrls.get(asset.id) : undefined;
+  const backgroundUrl = backgroundAsset ? presentationUrls.get(backgroundAsset.id) : undefined;
   const sceneFrame = useToolcraftProductSceneFrame();
   const timeline = useToolcraftSelector(selectTimeline, timelineEqual);
   const detail = stringValue(useToolcraftValue(chromishTargets.detail), "fine") as ChromishDetail;
@@ -178,10 +185,12 @@ export function ChromishCanvas(): React.JSX.Element {
   const rotationRadians = (startAngle * Math.PI) / 180 + directionSign * loopProgress * Math.PI * 2;
   const parameters = React.useMemo<ChromishRenderParameters>(() => ({
     background,
+    backgroundImageSize,
     cameraPosition: safeCameraVector(orbit.position, [0.15, 0.1, 4.5]),
     cameraUp: safeCameraVector(orbit.up, [0, 1, 0]),
     exposure,
     includeBackground,
+    includeBackgroundImage: Boolean(backgroundAsset && backgroundUrl),
     material,
     primaryColor,
     reflectionContrast,
@@ -189,7 +198,7 @@ export function ChromishCanvas(): React.JSX.Element {
     rotationRadians,
     secondaryColor,
     studioRotationRadians: (studioRotation * Math.PI) / 180,
-  }), [background, exposure, includeBackground, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
+  }), [background, backgroundAsset, backgroundImageSize, backgroundUrl, exposure, includeBackground, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
   parametersRef.current = parameters;
 
   React.useEffect(() => {
@@ -266,6 +275,19 @@ export function ChromishCanvas(): React.JSX.Element {
   }, [mesh, renderer]);
 
   React.useEffect(() => {
+    if (!renderer) return;
+    let active = true;
+    void renderer.setBackgroundImage(
+      backgroundUrl ?? null,
+      backgroundAsset?.assetKind === "image" ? backgroundAsset.transform : undefined,
+    ).then(
+      (size) => { if (active) setBackgroundImageSize(size); },
+      (error: unknown) => { if (active) setFeedback(error instanceof Error ? error.message : "The background image could not be loaded."); },
+    );
+    return () => { active = false; };
+  }, [backgroundAsset, backgroundUrl, renderer]);
+
+  React.useEffect(() => {
     try {
       renderer?.render(parameters);
     } catch {
@@ -337,6 +359,9 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-direction={direction}
         data-chromish-exposure={exposure}
         data-chromish-include-background={includeBackground ? "true" : "false"}
+        data-chromish-background-image={backgroundAsset?.fileName ?? "none"}
+        data-chromish-background-image-size={backgroundImageSize.join("x")}
+        data-chromish-background-transform={backgroundAsset?.assetKind === "image" ? JSON.stringify(backgroundAsset.transform ?? {}) : "{}"}
         data-chromish-material={material}
         data-chromish-mesh-route={mesh?.route ?? "empty"}
         data-chromish-reflection-contrast={reflectionContrast}

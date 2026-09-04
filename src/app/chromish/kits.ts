@@ -200,14 +200,17 @@ const canvas = document.querySelector("canvas");
 const gpu = await init({ label: "Chromish Embed" });
 const out = surface(gpu, canvas, { alphaMode: "premultiplied", dpr: [1, 2] });
 const hdr = target(gpu, { size: out.size, format: "rgba16float", depth: true, msaa: 4 });
+const backgroundTexture = gpu.device.createTexture({ format: "rgba8unorm", size: [1, 1], usage: ["copy_dst", "texture_binding"] });
+gpu.gpu.queue.writeTexture({ texture: backgroundTexture.gpu }, new Uint8Array([247,247,245,255]), { bytesPerRow: 4 }, [1,1]);
+const backgroundSampler = sampler(gpu, { minFilter: "linear", magFilter: "linear" });
 out.onResize(({ width, height }) => hdr.resize([width, height]));
 const mesh = await loadMesh();
 const geo = geometry(gpu, { buffers: [
   { data: mesh.positions, attributes: { position: "float32x3" } },
   { data: mesh.normals, attributes: { normal: "float32x3" } },
 ], indices: mesh.indices });
-const chrome = draw(gpu, { shader: chromeShader, geometry: geo, cull: "none", depth: { write: true, compare: "less-equal" } });
-const present = effect(gpu, toneShader, { set: { sceneTexture: hdr, sceneSampler: sampler(gpu, { minFilter: "linear", magFilter: "linear" }) } });
+const chrome = draw(gpu, { shader: chromeShader, geometry: geo, cull: "none", depth: { write: true, compare: "less-equal" }, set: { backgroundTexture, backgroundSampler } });
+const present = effect(gpu, toneShader, { set: { backgroundTexture, backgroundSampler, sceneTexture: hdr, sceneSampler: sampler(gpu, { minFilter: "linear", magFilter: "linear" }) } });
 let yaw = settings.startAngle * Math.PI / 180;
 let pitch = 0;
 let dragging = false;
@@ -237,8 +240,8 @@ function render(time) {
   if (!dragging) yaw = settings.startAngle * Math.PI / 180 + settings.directionSign * (time / (settings.duration * 1000)) * Math.PI * 2;
   const c = Math.cos(yaw), s = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const model = new Float32Array([c,sp*s,-cp*s,0,0,cp,sp,0,s,-sp*c,cp*c,0,0,0,0,1]);
-  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.primaryColorLinear, settings.roughness], secondaryColor: [...settings.secondaryColorLinear, 1], controls: [settings.reflectionContrast, settings.studioRotation, settings.materialIndex, time / 1000], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
-  present.set({ tone: { background: [...settings.backgroundLinear, 1], exposureAndMode: [settings.exposure, 1, 0, 0] } });
+  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.primaryColorLinear, settings.roughness], secondaryColor: [...settings.secondaryColorLinear, 1], controls: [settings.reflectionContrast, settings.studioRotation, settings.materialIndex, time / 1000], backgroundInfo: [canvas.width,canvas.height,1,1], backgroundTile: [0,0,1,1], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
+  present.set({ tone: { background: [...settings.backgroundLinear, 1], exposureAndMode: [settings.exposure, 1, 0, 0], backgroundInfo: [canvas.width,canvas.height,1,1], backgroundTile: [0,0,1,1] } });
   frame(gpu, current => { current.pass({ target: hdr, clear: [0,0,0,0], clearDepth: 1 }, chrome); current.pass(out, present); });
   requestAnimationFrame(render);
 }

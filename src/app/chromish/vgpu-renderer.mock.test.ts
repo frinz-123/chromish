@@ -25,6 +25,8 @@ describe("Chromish vgpu bindings", () => {
     const gpu = await init({ label: "chromish-mock" });
     const hdr = target(gpu, { depth: true, format: "rgba16float", msaa: 4, size: [32, 24] });
     const ldr = target(gpu, { format: "rgba8unorm", size: [32, 24] });
+    const background = target(gpu, { format: "rgba8unorm", size: [1, 1] });
+    const backgroundSampler = sampler(gpu, { magFilter: "linear", minFilter: "linear" });
     const mesh = geometry(gpu, {
       buffers: [
         { attributes: { position: "float32x3" }, data: new Float32Array([-1, -1, 0, 1, -1, 0, 0, 1, 0]) },
@@ -38,11 +40,14 @@ describe("Chromish vgpu bindings", () => {
       depth: { compare: "less-equal", write: true },
       geometry: mesh,
       shader: CHROME_SHADER_WGSL,
+      set: { backgroundSampler, backgroundTexture: background },
     });
     const identity = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
     chrome.set({
       scene: {
         cameraPosition: [0, 0, 4.5, 1],
+        backgroundInfo: [32, 24, 1, 1],
+        backgroundTile: [0, 0, 1, 1],
         controls: [1.25, 0.31, 0, 0],
         model: identity,
         secondaryColor: [1, 0.65, 0.02, 1],
@@ -53,10 +58,14 @@ describe("Chromish vgpu bindings", () => {
     });
     const tone = effect(gpu, TONE_MAP_SHADER_WGSL, {
       set: {
+        backgroundSampler,
+        backgroundTexture: background,
         sceneSampler: sampler(gpu, { magFilter: "linear", minFilter: "linear" }),
         sceneTexture: hdr,
         tone: {
           background: [0.93, 0.93, 0.91, 1],
+          backgroundInfo: [32, 24, 1, 1],
+          backgroundTile: [0, 0, 1, 1],
           exposureAndMode: [1, 1, 0, 0],
         },
       },

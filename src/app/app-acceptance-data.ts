@@ -107,8 +107,8 @@ export const appProductReadiness: ToolcraftProductReadiness = {
   ],
   mode: "product",
   productName: "Chromish",
-  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with five switchable procedural materials.",
-  requestedBehavior: "Import an SVG, choose diamond, shiny plastic, glass, fire, or playdough, orbit the extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
+  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with five switchable procedural materials and an image-based environment.",
+  requestedBehavior: "Import an SVG and background image, test diamond/glass transparency and refraction or colorable plastic/fire/playdough, orbit the extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
   viewInteraction: {
     mode: "orbit",
     orientationTargets: [chromishTargets.orbit],
@@ -202,6 +202,12 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
   }),
   control(chromishTargets.background, "color", {
     expectedObservable: "Changing the background updates preview pixels, Infinity viewport color, and exported background pixels.",
+  }),
+  control(chromishTargets.backgroundImage, "fileDrop", {
+    evidence: "media-lifecycle",
+    expectedObservable: "The default Unsplash image appears behind the object, can be replaced, rotated, flipped, removed, and restored by Reset while preview and export consume the transformed image.",
+    mediaLifecycleCoverage: ["upload", "remove", "reset", "default-remove", "default-reset", "rotate", "flip", "transform-output"],
+    userAction: "Replace, rotate, flip, remove, and Reset the background image through the visible Toolcraft media control.",
   }),
   control(chromishTargets.imageFormat, "select", {
     evidence: "exported-bytes",
@@ -351,7 +357,8 @@ export const appControlSectionInventory: readonly ToolcraftControlSectionInvento
   { entity: "Chrome geometry", entityId: "geometry", groupingReason: "Depth, bevel, and shared orbit pose describe the extruded object.", id: "geometry", targets: [chromishTargets.depth, chromishTargets.bevel, chromishTargets.orbit], title: "Geometry", workflowStage: "shape" },
   { entity: "Object material", entityId: "material", groupingReason: "The selector and applicable colors or optical parameters tune one procedural material.", id: "material", targets: [chromishTargets.material, chromishTargets.primaryColor, chromishTargets.secondaryColor, chromishTargets.roughness, chromishTargets.reflectionContrast, chromishTargets.studioRotation, "chrome.exposure"], title: "Material", workflowStage: "appearance" },
   { entity: "Rotation motion", entityId: "motion", groupingReason: "Direction and start angle modify the Toolcraft timeline cycle.", id: "motion", targets: [chromishTargets.direction, chromishTargets.startAngle], title: "Motion", workflowStage: "animation" },
-  { entity: "Canvas background", entityId: "background", groupingReason: "Background inclusion and color jointly define preview and export compositing.", id: "background", targets: [chromishTargets.includeBackground, chromishTargets.background], title: "Background", workflowStage: "appearance" },
+  { entity: "Environment image", entityId: "environment-image", groupingReason: "This source image is the complete editable environment used for backdrop and optical sampling.", id: "environment-image", targets: [chromishTargets.backgroundImage], title: "Environment Image", workflowStage: "source" },
+  { entity: "Canvas background", entityId: "background", groupingReason: "Background inclusion and fallback color jointly define preview and export compositing.", id: "background", targets: [chromishTargets.includeBackground, chromishTargets.background], title: "Background", workflowStage: "appearance" },
   { entity: "Image delivery", entityId: "image-export", groupingReason: "Image format and long-edge resolution configure runtime-owned image export.", id: "image-export", targets: [chromishTargets.imageFormat, chromishTargets.imageResolution], title: "Image Export", workflowStage: "delivery" },
   { entity: "Video delivery", entityId: "video-export", groupingReason: "Video container and size configure runtime-owned 30 FPS video export.", id: "video-export", targets: [chromishTargets.videoFormat, chromishTargets.videoResolution], title: "Video Export", workflowStage: "delivery" },
 ];
