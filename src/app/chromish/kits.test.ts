@@ -35,6 +35,7 @@ const snapshot: ChromishRuntimeSnapshot = {
     exposure: 1.1,
     includeBackground: true,
     includeBackgroundImage: true,
+    loopPhaseRadians: 0.2,
     material: "plastic",
     primaryColor: "#E6ECEF",
     reflectionContrast: 1.4,
@@ -89,6 +90,12 @@ describe("Chromish delivery kits", () => {
       expect(new TextDecoder().decode(glb.subarray(0, 4))).toBe("glTF");
       const document = await new WebIO().readBinary(glb);
       expect(document.getRoot().listMeshes()).toHaveLength(1);
+      const fireZip = unzipSync(await createGlbKit({
+        ...snapshot,
+        parameters: { ...snapshot.parameters, material: "fire", secondaryColor: "#00FF00" },
+      }));
+      const fireDocument = await new WebIO().readBinary(fireZip["chromish-object.glb"]!);
+      expect(fireDocument.getRoot().listMaterials()[0]?.getEmissiveFactor()).toEqual([0, 1, 0]);
       const embed = new TextDecoder().decode(zip["embed.html"]!);
       expect(embed).toContain("@google/model-viewer@4.3.1");
       expect(embed).toContain('rotation-per-second="-40.000000deg"');

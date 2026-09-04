@@ -216,6 +216,32 @@ export async function proveControlChange(
 }
 
 export function applicabilityCases(target: string): readonly ToolcraftControlApplicabilityCase[] {
+  const materialVisibility: Record<string, readonly string[]> = {
+    "chrome.exposure": ["diamond", "plastic", "glass", "fire", "playdough"],
+    "chrome.reflectionContrast": ["diamond", "glass"],
+    "chrome.roughness": ["plastic", "playdough"],
+    "chrome.studioRotation": ["diamond", "glass"],
+    "material.primaryColor": ["plastic", "fire", "playdough"],
+    "material.secondaryColor": ["plastic", "fire"],
+  };
+  const visibleMaterials = materialVisibility[target];
+  if (visibleMaterials) {
+    return [
+      ["Diamond", "diamond"],
+      ["Shiny plastic", "plastic"],
+      ["Glass", "glass"],
+      ["Fire", "fire"],
+      ["Playdough", "playdough"],
+    ].map(([selectorOptionLabel, selectorValue]) => ({
+      expectation: visibleMaterials.includes(selectorValue!) ? "visible" as const : "hidden" as const,
+      selectorControlType: "select" as const,
+      selectorLabel: "Finish",
+      selectorOptionLabel: selectorOptionLabel!,
+      selectorTarget: "material.type",
+      selectorValue: selectorValue!,
+      target,
+    }));
+  }
   const specifications: Record<string, readonly [string, "segmented" | "select" | "switch", readonly [string, boolean | string][]]> = {
     "appearance.background": ["export.includeBackground", "switch", [["Include", false], ["Include", true]]],
     "export.image.format": ["export.image.resolution", "select", [["2K", "2k"], ["4K", "4k"], ["8K", "8k"]]],

@@ -113,12 +113,14 @@ async function createGlb(mesh: ChromishCpuMesh, parameters: ChromishRuntimeSnaps
   const transmissive = parameters.material === "diamond" || parameters.material === "glass";
   const material = new MeshPhysicalMaterial({
     color: transmissive ? "#EAF7FF" : parameters.primaryColor,
-    emissive: parameters.material === "fire" ? parameters.primaryColor : "#000000",
+    emissive: parameters.material === "fire" ? parameters.secondaryColor : "#000000",
     emissiveIntensity: parameters.material === "fire" ? 2 : 0,
     ior: parameters.material === "diamond" ? 2.42 : 1.52,
     metalness: 0,
     opacity: transmissive ? 0.38 : 1,
     roughness: parameters.material === "playdough" ? Math.max(0.55, parameters.roughness) : parameters.roughness,
+    specularColor: parameters.material === "plastic" ? parameters.secondaryColor : "#FFFFFF",
+    specularIntensity: parameters.material === "plastic" ? 1 : 0.5,
     thickness: transmissive ? 0.35 : 0,
     transmission: transmissive ? 1 : 0,
     transparent: transmissive,
@@ -240,7 +242,8 @@ function render(time) {
   if (!dragging) yaw = settings.startAngle * Math.PI / 180 + settings.directionSign * (time / (settings.duration * 1000)) * Math.PI * 2;
   const c = Math.cos(yaw), s = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const model = new Float32Array([c,sp*s,-cp*s,0,0,cp,sp,0,s,-sp*c,cp*c,0,0,0,0,1]);
-  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.primaryColorLinear, settings.roughness], secondaryColor: [...settings.secondaryColorLinear, 1], controls: [settings.reflectionContrast, settings.studioRotation, settings.materialIndex, time / 1000], backgroundInfo: [canvas.width,canvas.height,1,1], backgroundTile: [0,0,1,1], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
+  const loopPhase = ((time / (settings.duration * 1000)) % 1) * Math.PI * 2;
+  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.primaryColorLinear, settings.roughness], secondaryColor: [...settings.secondaryColorLinear, 1], controls: [settings.reflectionContrast, settings.studioRotation, settings.materialIndex, loopPhase], backgroundInfo: [canvas.width,canvas.height,1,1], backgroundTile: [0,0,1,1], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
   present.set({ tone: { background: [...settings.backgroundLinear, 1], exposureAndMode: [settings.exposure, 1, 0, 0], backgroundInfo: [canvas.width,canvas.height,1,1], backgroundTile: [0,0,1,1] } });
   frame(gpu, current => { current.pass({ target: hdr, clear: [0,0,0,0], clearDepth: 1 }, chrome); current.pass(out, present); });
   requestAnimationFrame(render);

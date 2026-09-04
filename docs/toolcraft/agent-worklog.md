@@ -132,6 +132,24 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 - Verification: Focused schema/product/media, vgpu mock, kit, WGSL reflection, typecheck, code-health, and feature-browser checks only; the initial delivery receipt is not rerun.
 - Risks: The environment is a 2D refraction plate rather than a cubemap, and the standalone downloadable vgpu kit keeps its portable neutral fallback until environment bytes are packaged separately.
 
+### Delivery 5 — Deployment and review repairs
+
+- Request: Fix the Vercel TypeScript deployment failure and address the persistence migration, fire seam, conditional applicability proof, and GLB accent review findings.
+- Task type: Later Tier 3 focused build, persistence, timeline-renderer, acceptance-evidence, and artifact-fidelity repair.
+- User-visible result: Production compilation succeeds, existing v1 workspaces remain discoverable while schema payload version 3 migrates, Fire stitches at the loop boundary, all material branches receive applicability evidence, and GLB Fire/Plastic approximations retain Accent.
+- Source/reference checked: The supplied Vercel build log, four Codex review comments, current Toolcraft persistence bootstrap, timeline contract, acceptance applicability helpers, Three.js physical material export, and current vgpu shader.
+- Reference inputs: No new visual or motion inputs; the deployment log and review comments are defect evidence against the existing product behavior.
+- Docs/contracts read: `workflow.md`, `decision-contract.md`, `core/runtime-boundary.md`, `core/control-selection.md`, `core/layout.md`, `core/performance.md`, `core/timeline-animation.md`, `core/setup-export.md`, `core/media-upload.md`, `schema-reference.md`, `component-rules.md`, `renderer-technique.md`, `performance.md`, and `acceptance-testing.md`.
+- Contract rules applied: persistence-policy-explicit, timeline-enabled-behavior, controls-product-coverage, acceptance-product-observable, output-export-required, renderer-technique-inventory, and workflow-required.
+- View interaction intent: Orbit remains unchanged; all repairs preserve the shared view target and do not add another interaction surface.
+- Interaction ownership: No ownership change; panel material controls and built-in media actions remain complementary to canvas orbit.
+- Decision: Narrow the default-media discriminated union before reading `dataUrl`; restore the stable v1 storage key while retaining payload version 3; derive fire noise only from integer-harmonic sine/cosine loop phase; enumerate all five material applicability cases through protected helpers; map Accent to GLB emissive/specular properties.
+- Alternatives rejected: Casting away the schema error, changing Vercel configuration, abandoning prior storage, hiding the fire seam with end-frame clamping, unscoped browser evidence, and documenting GLB color loss as unavoidable.
+- State/output mapping: Timeline progress maps to `0..2π` fire phase and identical endpoint offsets; persistence reads the original key and migrates versioned payloads; conditional controls prove visible output only in accepted branches; secondary color feeds WebGPU plus GLB Fire emissive and Plastic specular properties.
+- Performance intent: ordinary-product-work; these are correctness repairs and do not authorize measured performance.
+- Verification: Production `npm run build`, focused schema/product/shader/kit tests, code health, and material feature selection; no repeated delivery or measured performance run.
+- Risks: Browser acceptance still depends on a locally available Playwright Chromium binary; the container's CDN policy may prevent downloading it.
+
 ## Evidence
 
 - Source reviewed: `/Users/sw/Desktop/Screen Recording 2026-09-03 at 9.47.09 PM.mov` and `video-reference/2026-09-03-chrome-emblem/contact-sheet.png`.

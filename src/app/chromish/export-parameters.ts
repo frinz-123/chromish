@@ -30,6 +30,7 @@ export function getChromishExportParameters(
     exposure: numberValue(state, "chrome.exposure", 1),
     includeBackground: state.values[chromishTargets.includeBackground] !== false,
     includeBackgroundImage: state.mediaAssets.some((asset) => asset.assetKind === "image" && asset.sourceTarget === chromishTargets.backgroundImage && asset.lifecycle === "ready"),
+    loopPhaseRadians: timelineProgress * Math.PI * 2,
     material: stringValue(state, chromishTargets.material, "diamond") as ChromishRenderParameters["material"],
     primaryColor: stringValue(state, chromishTargets.primaryColor, "#FF5A4F"),
     reflectionContrast: numberValue(state, chromishTargets.reflectionContrast, 1.25),

@@ -75,14 +75,16 @@ for (const [testName, target, outputAttribute] of [
   test(testName, async ({ page }) => {
     await openChromish(page);
     await uploadVectorSvg(page);
-    if (target === "chrome.roughness") await chooseSelect(page, "material.type", "plastic");
-    const canvas = page.locator(canvasSelector);
-    const before = await canvas.getAttribute(outputAttribute);
-    await changeSlider(page, target);
-    await expect.poll(() => canvas.getAttribute(outputAttribute)).not.toBe(before);
-    await proveControlChange(page, target, target, async (field) => {
-      await field.getByRole("slider").press("ArrowRight");
-    });
+    await pauseTimeline(page);
+    for (const applicabilityCase of applicabilityCases(target)) {
+      if (applicabilityCase.expectation === "visible") {
+        await proveApplicabilityControlChange(page, target, target, applicabilityCase, async (field) => {
+          await field.getByRole("slider").press("ArrowRight");
+        });
+      } else {
+        await selectApplicabilityCase(await createProofSession(page), applicabilityCase, target);
+      }
+    }
   });
 }
 
@@ -98,20 +100,25 @@ test("browser: chromish material.type", async ({ page }) => {
   });
 });
 
-for (const [testName, target, mode, color, attribute] of [
-  ["browser: chromish material.primaryColor", "material.primaryColor", "plastic", "#B8D7E8", "data-chromish-primary-color"],
-  ["browser: chromish material.secondaryColor", "material.secondaryColor", "fire", "#FFF06A", "data-chromish-secondary-color"],
+for (const [testName, target, color, attribute] of [
+  ["browser: chromish material.primaryColor", "material.primaryColor", "#B8D7E8", "data-chromish-primary-color"],
+  ["browser: chromish material.secondaryColor", "material.secondaryColor", "#FFF06A", "data-chromish-secondary-color"],
 ] as const) {
   test(testName, async ({ page }) => {
     await openChromish(page);
     await uploadVectorSvg(page);
-    await chooseSelect(page, "material.type", mode);
-    await setColor(page, target, color);
-    await expect(page.locator(canvasSelector)).toHaveAttribute(attribute, color);
-    await proveControlChange(page, target, target, async (field) => {
-    const input = field.locator('input[type="text"]');
-    await input.fill("#D9E4EA");
-    await input.press("Enter");
-    });
+    await pauseTimeline(page);
+    for (const applicabilityCase of applicabilityCases(target)) {
+      if (applicabilityCase.expectation === "visible") {
+        await proveApplicabilityControlChange(page, target, target, applicabilityCase, async (field) => {
+          const input = field.locator('input[type="text"]');
+          await input.fill(color);
+          await input.press("Enter");
+        });
+        await expect(page.locator(canvasSelector)).toHaveAttribute(attribute, color);
+      } else {
+        await selectApplicabilityCase(await createProofSession(page), applicabilityCase, target);
+      }
+    }
   });
 }

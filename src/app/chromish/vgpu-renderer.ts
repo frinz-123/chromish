@@ -84,8 +84,9 @@ fn studio(r: vec3f, contrast: f32, angle: f32) -> vec3f {
 
 fn fireNoise(position: vec3f, time: f32) -> f32 {
   let p = position * vec3f(5.0, 3.5, 4.0);
-  let first = sin(p.x + time * 4.1) * sin(p.y * 1.7 - time * 3.3);
-  let second = sin(p.z * 2.3 - p.y * 1.2 + time * 5.7);
+  let loopOffset = vec3f(sin(time), cos(time), sin(time * 2.0));
+  let first = sin(p.x + loopOffset.x * 1.7) * sin(p.y * 1.7 + loopOffset.y * 1.3);
+  let second = sin(p.z * 2.3 - p.y * 1.2 + loopOffset.z * 1.1);
   return 0.5 + 0.25 * first + 0.25 * second;
 }
 
@@ -211,6 +212,7 @@ export type ChromishRenderParameters = Readonly<{
   exposure: number;
   includeBackground: boolean;
   includeBackgroundImage: boolean;
+  loopPhaseRadians: number;
   material: "diamond" | "plastic" | "glass" | "fire" | "playdough";
   primaryColor: string;
   reflectionContrast: number;
@@ -222,6 +224,10 @@ export type ChromishRenderParameters = Readonly<{
 
 export function chromishMaterialIndex(material: ChromishRenderParameters["material"]): number {
   return { diamond: 0, plastic: 1, glass: 2, fire: 3, playdough: 4 }[material];
+}
+
+export function chromishFireLoopOffset(phaseRadians: number): readonly [number, number, number] {
+  return [Math.sin(phaseRadians), Math.cos(phaseRadians), Math.sin(phaseRadians * 2)];
 }
 
 function hexToLinearRgba(value: string): [number, number, number, number] {
@@ -464,7 +470,7 @@ export class ChromishVgpuRenderer {
         backgroundInfo: [fullSize[0], fullSize[1], parameters.backgroundImageSize[0], parameters.backgroundImageSize[1]],
         backgroundTile,
         cameraPosition: [...camera.position.toArray(), 1],
-        controls: [parameters.reflectionContrast, parameters.studioRotationRadians, chromishMaterialIndex(parameters.material), parameters.rotationRadians],
+        controls: [parameters.reflectionContrast, parameters.studioRotationRadians, chromishMaterialIndex(parameters.material), parameters.loopPhaseRadians],
         model: new Float32Array(model.elements),
         tile,
         secondaryColor: hexToLinearRgba(parameters.secondaryColor),

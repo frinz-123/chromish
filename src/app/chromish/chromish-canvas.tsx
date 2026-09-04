@@ -191,6 +191,7 @@ export function ChromishCanvas(): React.JSX.Element {
     exposure,
     includeBackground,
     includeBackgroundImage: Boolean(backgroundAsset && backgroundUrl),
+    loopPhaseRadians: loopProgress * Math.PI * 2,
     material,
     primaryColor,
     reflectionContrast,
@@ -198,7 +199,7 @@ export function ChromishCanvas(): React.JSX.Element {
     rotationRadians,
     secondaryColor,
     studioRotationRadians: (studioRotation * Math.PI) / 180,
-  }), [background, backgroundAsset, backgroundImageSize, backgroundUrl, exposure, includeBackground, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
+  }), [background, backgroundAsset, backgroundImageSize, backgroundUrl, exposure, includeBackground, loopProgress, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
   parametersRef.current = parameters;
 
   React.useEffect(() => {

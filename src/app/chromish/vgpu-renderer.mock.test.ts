@@ -9,7 +9,7 @@ import {
   target,
 } from "vgpu/mock";
 
-import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL, chromishMaterialIndex } from "./vgpu-renderer";
+import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL, chromishFireLoopOffset, chromishMaterialIndex } from "./vgpu-renderer";
 
 describe("Chromish vgpu bindings", () => {
   it("maps every selectable material to a stable WGSL branch", () => {
@@ -19,6 +19,15 @@ describe("Chromish vgpu bindings", () => {
     expect(CHROME_SHADER_WGSL).toContain("1.0 / 2.42");
     expect(CHROME_SHADER_WGSL).toContain("1.0 / 1.52");
     expect(CHROME_SHADER_WGSL).toContain("fireNoise");
+  });
+
+  it("stitches the fire turbulence phase at the forward timeline seam", () => {
+    const start = chromishFireLoopOffset(0);
+    const end = chromishFireLoopOffset(Math.PI * 2);
+    expect(end[0]).toBeCloseTo(start[0], 12);
+    expect(end[1]).toBeCloseTo(start[1], 12);
+    expect(end[2]).toBeCloseTo(start[2], 12);
+    expect(CHROME_SHADER_WGSL).toContain("sin(time * 2.0)");
   });
 
   it("compiles and executes the exact HDR, depth, MSAA, and tone-map passes", async () => {

@@ -104,8 +104,13 @@ describe("Chromish appSchema", () => {
         sourceTarget: "media.backgroundImage",
       }),
     ]);
-    expect(appSchema.media.defaultAssets[0]?.dataUrl).toMatch(/^data:image\/png;base64,/u);
-    const encoded = appSchema.media.defaultAssets[0]?.dataUrl.split(",")[1] ?? "";
+    const defaultBackground = appSchema.media.defaultAssets[0];
+    expect(defaultBackground?.assetKind).toBe("image");
+    if (!defaultBackground || defaultBackground.assetKind === "model") {
+      throw new Error("Chromish must provide an image default background.");
+    }
+    expect(defaultBackground.dataUrl).toMatch(/^data:image\/png;base64,/u);
+    const encoded = defaultBackground.dataUrl.split(",")[1] ?? "";
     const bytes = Buffer.from(encoded, "base64");
     expect(bytes.readUInt32BE(16)).toBe(1632);
     expect(bytes.readUInt32BE(20)).toBe(918);
@@ -137,6 +142,10 @@ describe("Chromish appSchema", () => {
     if (appSchema.persistence.storage !== "localStorage") {
       throw new Error("Chromish must persist user settings in localStorage.");
     }
+    expect(appSchema.persistence).toMatchObject({
+      key: "toolcraft:chromish:state:v1",
+      version: 3,
+    });
     expect(appSchema.persistence.include).toContain("canvas");
     expect(
       appAcceptance.find((entry) => entry.id === "persistence.reload"),
