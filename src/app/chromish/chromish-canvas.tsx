@@ -23,6 +23,8 @@ import {
 } from "@/toolcraft/runtime/react";
 
 import { chromishTargets } from "./control-sections";
+import { fireDeformedPoint } from "./fire-mesh";
+import { readCustomization } from "./customization";
 import { chromishPipelinePasses } from "./renderer-pipeline";
 import { setChromishRuntimeSnapshot } from "./runtime-store";
 import { buildChromishMesh, type ChromishCpuMesh, type ChromishDetail } from "./svg-mesh";
@@ -35,6 +37,10 @@ import {
 
 function selectSvgAsset(state: ToolcraftState): ToolcraftMediaAsset | null {
   return state.mediaAssets.find((asset) => asset.sourceTarget === chromishTargets.source) ?? null;
+}
+
+function selectBackgroundAsset(state: ToolcraftState): ToolcraftMediaAsset | null {
+  return state.mediaAssets.find((asset) => asset.sourceTarget === chromishTargets.backgroundImage) ?? null;
 }
 
 function selectTimeline(state: ToolcraftState) {
@@ -124,7 +130,7 @@ function ChromishMeshLoader({ asset, bevel, depth, detail, onError, onMesh, url 
 
 function buildRaycastMesh(mesh: ChromishCpuMesh): Mesh {
   const geometry = new BufferGeometry();
-  geometry.setAttribute("position", new BufferAttribute(mesh.positions, 3));
+  geometry.setAttribute("position", new BufferAttribute(Float32Array.from(mesh.positions), 3));
   geometry.setAttribute("normal", new BufferAttribute(mesh.normals, 3));
   geometry.setIndex(new BufferAttribute(mesh.indices, 1));
   geometry.computeBoundingSphere();
@@ -143,16 +149,29 @@ export function ChromishCanvas(): React.JSX.Element {
   const [sourceSvg, setSourceSvg] = React.useState("");
   const [feedback, setFeedback] = React.useState<string | null>(null);
   const [gpuUnavailable, setGpuUnavailable] = React.useState(false);
+  const [backgroundImageSize, setBackgroundImageSize] = React.useState<readonly [number, number]>([1, 1]);
+  const [backgroundImageReady, setBackgroundImageReady] = React.useState(false);
   const asset = useToolcraftSelector(selectSvgAsset);
-  const assets = React.useMemo(() => asset ? [asset] : [], [asset]);
+  const backgroundAsset = useToolcraftSelector(selectBackgroundAsset);
+  const assets = React.useMemo(() => [asset, backgroundAsset].filter((item): item is ToolcraftMediaAsset => Boolean(item)), [asset, backgroundAsset]);
   const presentationUrls = useToolcraftMediaPresentationUrls(assets);
   const url = asset ? presentationUrls.get(asset.id) : undefined;
+  const backgroundUrl = backgroundAsset ? presentationUrls.get(backgroundAsset.id) : undefined;
   const sceneFrame = useToolcraftProductSceneFrame();
   const timeline = useToolcraftSelector(selectTimeline, timelineEqual);
   const detail = stringValue(useToolcraftValue(chromishTargets.detail), "fine") as ChromishDetail;
   const depth = numeric(useToolcraftValue(chromishTargets.depth), 0.24);
   const bevel = numeric(useToolcraftValue(chromishTargets.bevel), 0.04);
-  const tint = stringValue(useToolcraftValue(chromishTargets.tint), "#E6ECEF");
+  const material = stringValue(useToolcraftValue(chromishTargets.material), "chrome") as ChromishRenderParameters["material"];
+  const customization = useToolcraftSelector(
+    (state) => readCustomization(state.values, material),
+    (a, b) => a.objectScale === b.objectScale && a.fieldOfView === b.fieldOfView && a.saturation === b.saturation && a.materialSettings.every((value, i) => value === b.materialSettings[i]),
+  );
+  const selectedMesh = material === "diamond" ? mesh?.gem ?? mesh : material === "fire" ? mesh?.fire ?? mesh : mesh;
+  const selectedMeshRef = React.useRef(selectedMesh);
+  selectedMeshRef.current = selectedMesh;
+  const primaryColor = stringValue(useToolcraftValue(chromishTargets.primaryColor), "#E6ECEF");
+  const secondaryColor = stringValue(useToolcraftValue(chromishTargets.secondaryColor), "#FFD429");
   const roughness = numeric(useToolcraftValue(chromishTargets.roughness), 0.12);
   const reflectionContrast = numeric(useToolcraftValue(chromishTargets.reflectionContrast), 1.25);
   const studioRotation = numeric(useToolcraftValue(chromishTargets.studioRotation), 18);
@@ -175,17 +194,23 @@ export function ChromishCanvas(): React.JSX.Element {
   const directionSign = direction === "counterclockwise" ? -1 : 1;
   const rotationRadians = (startAngle * Math.PI) / 180 + directionSign * loopProgress * Math.PI * 2;
   const parameters = React.useMemo<ChromishRenderParameters>(() => ({
+    ...customization,
     background,
+    backgroundImageSize,
     cameraPosition: safeCameraVector(orbit.position, [0.15, 0.1, 4.5]),
     cameraUp: safeCameraVector(orbit.up, [0, 1, 0]),
     exposure,
     includeBackground,
+    includeBackgroundImage: backgroundImageReady,
+    loopPhaseRadians: loopProgress * Math.PI * 2,
+    material,
+    primaryColor,
     reflectionContrast,
     roughness,
     rotationRadians,
+    secondaryColor,
     studioRotationRadians: (studioRotation * Math.PI) / 180,
-    tint,
-  }), [background, exposure, includeBackground, orbit.position, orbit.up, reflectionContrast, roughness, rotationRadians, studioRotation, tint]);
+  }), [customization, background, backgroundImageReady, backgroundImageSize, exposure, includeBackground, loopProgress, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
   parametersRef.current = parameters;
 
   React.useEffect(() => {
@@ -248,10 +273,13 @@ export function ChromishCanvas(): React.JSX.Element {
     setMesh(nextMesh);
     setSourceSvg(nextSourceSvg);
     setFeedback(null);
+  }, []);
+
+  React.useEffect(() => {
     raycastMeshRef.current?.geometry.dispose();
     (raycastMeshRef.current?.material as MeshBasicMaterial | undefined)?.dispose();
-    raycastMeshRef.current = buildRaycastMesh(nextMesh);
-  }, []);
+    raycastMeshRef.current = selectedMesh ? buildRaycastMesh(selectedMesh) : null;
+  }, [selectedMesh]);
 
   const handleError = React.useCallback((error: unknown) => {
     setFeedback(error instanceof Error ? error.message : "The SVG could not be converted.");
@@ -260,6 +288,24 @@ export function ChromishCanvas(): React.JSX.Element {
   React.useEffect(() => {
     renderer?.setMesh(mesh);
   }, [mesh, renderer]);
+
+  React.useEffect(() => {
+    if (!renderer) return;
+    let active = true;
+    setBackgroundImageReady(false);
+    void renderer.setBackgroundImage(
+      backgroundUrl ?? null,
+      backgroundAsset?.assetKind === "image" ? backgroundAsset.transform : undefined,
+    ).then(
+      (size) => {
+        if (!active) return;
+        setBackgroundImageSize(size);
+        setBackgroundImageReady(Boolean(backgroundUrl));
+      },
+      (error: unknown) => { if (active) setFeedback(error instanceof Error ? error.message : "The background image could not be loaded."); },
+    );
+    return () => { active = false; };
+  }, [backgroundAsset, backgroundUrl, renderer]);
 
   React.useEffect(() => {
     try {
@@ -273,14 +319,14 @@ export function ChromishCanvas(): React.JSX.Element {
         directionSign,
         durationSeconds: timeline.durationSeconds,
         fileName: asset.fileName,
-        mesh,
+        mesh: selectedMesh ?? mesh,
         parameters,
         renderer,
         sourceSvg,
         startAngleDegrees: startAngle,
       });
     }
-  }, [asset, directionSign, mesh, parameters, renderer, sourceSvg, startAngle, timeline.durationSeconds]);
+  }, [asset, directionSign, mesh, selectedMesh, parameters, renderer, sourceSvg, startAngle, timeline.durationSeconds]);
 
   const hitTest = React.useCallback((clientX: number, clientY: number): boolean => {
     const canvas = canvasRef.current;
@@ -294,7 +340,18 @@ export function ChromishCanvas(): React.JSX.Element {
       -(((clientY - rect.top) / rect.height) * 2 - 1),
     );
     const camera = createChromishRaycastCamera(rect.width, rect.height, current);
+    // Only pointer-down pays CPU deformation; playback remains entirely on GPU.
+    if (current.material === "fire" && selectedMeshRef.current) {
+      const source = selectedMeshRef.current;
+      const position = cpuMesh.geometry.getAttribute("position");
+      for (let i = 0; i < position.count; i++) {
+        const p = fireDeformedPoint(source.positions[i * 3]!, source.positions[i * 3 + 1]!, source.positions[i * 3 + 2]!, current.loopPhaseRadians, source.bounds.min[1], source.bounds.max[1], current.materialSettings);
+        position.setXYZ(i, ...p);
+      }
+      cpuMesh.geometry.computeBoundingSphere();
+    }
     cpuMesh.rotation.set(0, current.rotationRadians, 0);
+    cpuMesh.scale.setScalar(current.objectScale ?? 1);
     cpuMesh.updateMatrixWorld(true);
     const raycaster = new Raycaster();
     raycaster.setFromCamera(pointer, camera);
@@ -319,7 +376,7 @@ export function ChromishCanvas(): React.JSX.Element {
     >
       <canvas
         {...orbitHandlers}
-        aria-label="Rotating chrome SVG preview"
+        aria-label={`Rotating ${material} SVG preview`}
         className="block h-full w-full touch-none"
         height={backingHeight}
         data-canvas-model-layer="chromish-object"
@@ -333,6 +390,11 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-direction={direction}
         data-chromish-exposure={exposure}
         data-chromish-include-background={includeBackground ? "true" : "false"}
+        data-chromish-background-image={backgroundAsset?.fileName ?? "none"}
+        data-chromish-background-image-ready={backgroundImageReady ? "true" : "false"}
+        data-chromish-background-image-size={backgroundImageSize.join("x")}
+        data-chromish-background-transform={backgroundAsset?.assetKind === "image" ? JSON.stringify(backgroundAsset.transform ?? {}) : "{}"}
+        data-chromish-material={material}
         data-chromish-mesh-route={mesh?.route ?? "empty"}
         data-chromish-reflection-contrast={reflectionContrast}
         data-chromish-renderer-ready={renderer && !gpuUnavailable ? "true" : "false"}
@@ -340,8 +402,11 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-roughness={roughness}
         data-chromish-start-angle={startAngle}
         data-chromish-studio-rotation={studioRotation}
-        data-chromish-tint={tint}
-        data-chromish-triangle-count={mesh?.triangleCount ?? 0}
+        data-chromish-primary-color={primaryColor}
+        data-chromish-secondary-color={secondaryColor}
+        data-chromish-triangle-count={selectedMesh?.triangleCount ?? 0}
+        data-chromish-cut={material === "diamond" && mesh?.gem ? "crown-pavilion" : "smooth-extrusion"}
+        data-chromish-fire-geometry={material === "fire" ? "deforming-mesh" : "inactive"}
         data-timeline-progress={loopProgress.toFixed(6)}
         data-toolcraft-canvas-render-scale-backing=""
         data-toolcraft-model-orbit-surface="true"

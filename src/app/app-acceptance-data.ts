@@ -8,6 +8,7 @@ import type {
 import motionEvidenceJson from "./reference-studies/motion-v1-b740d39516f721df08c2042f2c6929642f9faae0712087006ac9ec5e3e46b0cf/evidence.json" with { type: "json" };
 import { appSchema } from "./app-schema";
 import { chromishTargets } from "./chromish/control-sections";
+import { compositionKnobs, customizationTargets, materialKnobs, materialKnobTarget, materialNames, materialTitles } from "./chromish/customization";
 
 const motionEvidence = motionEvidenceJson as unknown as ToolcraftMotionReferenceEvidence;
 const referenceId = "motion-reference-v1-b740d39516f721df08c2042f2c6929642f9faae0712087006ac9ec5e3e46b0cf" as const;
@@ -89,6 +90,13 @@ export const appProductReadiness: ToolcraftProductReadiness = {
     },
   },
   interactionOwnership: [
+    ...customizationTargets.map((target) => ({
+      id: `panel.${target}`, target, capability: "property-edit" as const, surface: "panel" as const,
+      selectionScope: { mode: "global" as const },
+      reason: "Numeric material tuning and final composition need precise, discoverable values in the panel.",
+      alternative: { surface: "canvas" as const, reason: "Canvas handles would clutter the single object and compete with direct orbit; they do not improve abstract shader-property editing." },
+      evidence: { source: "user-request" as const, detail: "The user requested more controls per material and asked us to choose and implement useful general controls." },
+    })),
     {
       alternative: {
         reason: "Panel-only numeric camera controls would make direct inspection slower.",
@@ -107,8 +115,8 @@ export const appProductReadiness: ToolcraftProductReadiness = {
   ],
   mode: "product",
   productName: "Chromish",
-  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled procedural-chrome WebGPU object.",
-  requestedBehavior: "Import an SVG, orbit and tune its chrome extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
+  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with six switchable procedural materials and an optional image-based environment.",
+  requestedBehavior: "Import an SVG, keep the original chrome or choose diamond, glass, plastic, fire, or playdough, optionally upload a background image, orbit the extrusion, and export images, video, GLB, or a full-fidelity vgpu kit.",
   viewInteraction: {
     mode: "orbit",
     orientationTargets: [chromishTargets.orbit],
@@ -177,9 +185,19 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
     target: chromishTargets.orbit,
     userAction: "Drag a gizmo axis, snap an axis, drag the object, drag a canvas miss, then undo and reset.",
   },
-  control(chromishTargets.tint, "color"),
+  control(chromishTargets.material, "select", {
+    expectedObservable: "Diamond selects real table/crown/girdle/pavilion geometry with crisp reflections and spectral transmission; Glass keeps the smooth extrusion with backdrop transmission and Fresnel reflections; Fire physically stretches and curls the upper mesh into incandescent tongues while retaining the recognizable lower shape.",
+    optionCoverage: ["chrome", "diamond", "plastic", "glass", "fire", "playdough"],
+  }),
+  control(chromishTargets.primaryColor, "color", {
+    expectedObservable: "Primary changes the visible tint or body color for chrome, plastic, fire, and playdough while remaining absent for diamond and glass.",
+  }),
+  control(chromishTargets.secondaryColor, "color", {
+    expectedObservable: "Accent changes the visible highlight for plastic and fire while remaining absent for other materials.",
+  }),
   control(chromishTargets.roughness, "slider"),
   control(chromishTargets.reflectionContrast, "slider"),
+  ...customizationTargets.map((target) => control(target, "slider", { expectedObservable: "Changing this setting changes the rendered object at a fixed timeline frame, without changing other material settings or rebuilding source geometry." })),
   control(chromishTargets.studioRotation, "slider"),
   control("chrome.exposure", "slider"),
   control(chromishTargets.direction, "select", {
@@ -193,6 +211,12 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
   }),
   control(chromishTargets.background, "color", {
     expectedObservable: "Changing the background updates preview pixels, Infinity viewport color, and exported background pixels.",
+  }),
+  control(chromishTargets.backgroundImage, "fileDrop", {
+    evidence: "media-lifecycle",
+    expectedObservable: "An uploaded image appears behind the object, can be rotated, flipped, and removed, while preview and export consume the transformed image; Reset returns to the selected fallback color.",
+    mediaLifecycleCoverage: ["upload", "remove", "reset", "rotate", "flip", "transform-output"],
+    userAction: "Upload, rotate, flip, remove, and Reset the background image through the visible Toolcraft media control.",
   }),
   control(chromishTargets.imageFormat, "select", {
     evidence: "exported-bytes",
@@ -338,11 +362,14 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
 ];
 
 export const appControlSectionInventory: readonly ToolcraftControlSectionInventoryEntry[] = [
+  ...materialNames.map((material) => ({ entity: "Object material", entityId: "material", groupingReason: "Material-specific properties remain together and retain independent values.", id: `material-${material}`, targets: materialKnobs[material].map(({ key }) => materialKnobTarget(material, key)), title: materialTitles[material], workflowStage: `${material}-tuning`, splitReason: "More than ten material properties are split into a shared appearance stage and four-control finish-specific stages." })),
+  { entity: "Output composition", entityId: "composition", groupingReason: "Framing and foreground grading determine the final object presentation.", id: "composition", targets: compositionKnobs.map(({ key }) => `composition.${key}`), title: "Composition" },
   { entity: "SVG source", entityId: "svg", groupingReason: "Import admission and silhouette detail are the first workflow stage.", id: "svg", targets: [chromishTargets.source, chromishTargets.detail], title: "SVG", workflowStage: "source" },
   { entity: "Chrome geometry", entityId: "geometry", groupingReason: "Depth, bevel, and shared orbit pose describe the extruded object.", id: "geometry", targets: [chromishTargets.depth, chromishTargets.bevel, chromishTargets.orbit], title: "Geometry", workflowStage: "shape" },
-  { entity: "Chrome material", entityId: "chrome", groupingReason: "Five shader parameters tune one procedural chrome material.", id: "chrome", targets: [chromishTargets.tint, chromishTargets.roughness, chromishTargets.reflectionContrast, chromishTargets.studioRotation, "chrome.exposure"], title: "Chrome", workflowStage: "appearance" },
+  { entity: "Object material", entityId: "material", groupingReason: "The selector and applicable colors or optical parameters tune one procedural material.", id: "material", targets: [chromishTargets.material, chromishTargets.primaryColor, chromishTargets.secondaryColor, chromishTargets.roughness, chromishTargets.reflectionContrast, chromishTargets.studioRotation, "chrome.exposure"], title: "Material", workflowStage: "appearance", splitReason: "More than ten material properties are split into a shared appearance stage and four-control finish-specific stages." },
   { entity: "Rotation motion", entityId: "motion", groupingReason: "Direction and start angle modify the Toolcraft timeline cycle.", id: "motion", targets: [chromishTargets.direction, chromishTargets.startAngle], title: "Motion", workflowStage: "animation" },
-  { entity: "Canvas background", entityId: "background", groupingReason: "Background inclusion and color jointly define preview and export compositing.", id: "background", targets: [chromishTargets.includeBackground, chromishTargets.background], title: "Background", workflowStage: "appearance" },
+  { entity: "Environment image", entityId: "environment-image", groupingReason: "This source image is the complete editable environment used for backdrop and optical sampling.", id: "environment-image", targets: [chromishTargets.backgroundImage], title: "Environment Image", workflowStage: "source" },
+  { entity: "Canvas background", entityId: "background", groupingReason: "Background inclusion and fallback color jointly define preview and export compositing.", id: "background", targets: [chromishTargets.includeBackground, chromishTargets.background], title: "Background", workflowStage: "appearance" },
   { entity: "Image delivery", entityId: "image-export", groupingReason: "Image format and long-edge resolution configure runtime-owned image export.", id: "image-export", targets: [chromishTargets.imageFormat, chromishTargets.imageResolution], title: "Image Export", workflowStage: "delivery" },
   { entity: "Video delivery", entityId: "video-export", groupingReason: "Video container and size configure runtime-owned 30 FPS video export.", id: "video-export", targets: [chromishTargets.videoFormat, chromishTargets.videoResolution], title: "Video Export", workflowStage: "delivery" },
 ];

@@ -45,6 +45,7 @@ import {
   inspectOneSecondVideo,
   inspectVideoFromDownload,
   oneSecondSchedule,
+  observeChromishCanvasRaster,
   openChromish,
   pauseTimeline,
   prepareGpuPage,
@@ -103,4 +104,59 @@ test("browser: chromish media.svgSource", async ({ page }) => {
   await expect(canvas).toHaveAttribute("data-chromish-mesh-route", "raster", { timeout: 20_000 });
   await page.getByRole("button", { name: "Reset controls" }).click();
   await expect(canvas).toHaveAttribute("data-chromish-mesh-route", "empty");
+});
+
+test("browser: chromish media.backgroundImage", async ({ page }) => {
+  await withGpuPage(page, async (gpuPage) => {
+    const renderingWarnings: string[] = [];
+    gpuPage.on("console", (message) => {
+      if (message.text().includes("Destination texture needs to have CopyDst and RenderAttachment usage")) {
+        renderingWarnings.push(message.text());
+      }
+    });
+    const canvas = gpuPage.locator(canvasSelector);
+    await expect(canvas).toHaveAttribute("data-chromish-renderer-ready", "true", { timeout: 25_000 });
+    await pauseTimeline(gpuPage);
+    await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
+    const fallback = await observeChromishCanvasRaster(gpuPage);
+
+    const session = await createProofSession(gpuPage);
+    const observation = session.observe((root) => {
+      const output = root.querySelector<HTMLElement>("[data-chromish-background-image]");
+      const fileName = output?.dataset.chromishBackgroundImage ?? "none";
+      return {
+        itemIds: fileName === "none" ? [] : [fileName],
+        outputSignature: `${fileName}:${output?.dataset.chromishBackgroundTransform ?? "{}"}:${output?.dataset.chromishBackgroundImageReady ?? "false"}`,
+      };
+    });
+    const backgroundFixture = await fs.readFile(new URL(
+      "../src/app/reference-studies/motion-v1-b740d39516f721df08c2042f2c6929642f9faae0712087006ac9ec5e3e46b0cf/contact-sheet.png",
+      import.meta.url,
+    ));
+    await expectToolcraftMediaLifecycle(
+      observation,
+      session.controlAction("media.backgroundImage", async (field) => {
+        await field.locator('input[type="file"]').setInputFiles({ buffer: backgroundFixture, mimeType: "image/png", name: "refraction-test.png" });
+      }),
+      { itemIds: ["refraction-test.png"], outputSignature: "refraction-test.png:{}:true" },
+      { requirementId: "media.backgroundImage", stabilityIntervalMs: 20, timeoutMs: 20_000 },
+    );
+    await expect.poll(async () => (await observeChromishCanvasRaster(gpuPage)).hash).not.toBe(fallback.hash);
+    const uploaded = await observeChromishCanvasRaster(gpuPage);
+    expect(uploaded.nonBlackRatio).toBeGreaterThan(0.9);
+    expect(uploaded.averageRgb[0] + uploaded.averageRgb[1] + uploaded.averageRgb[2]).toBeGreaterThan(300);
+    expect(renderingWarnings).toEqual([]);
+
+    await gpuPage.getByRole("button", { name: "90°" }).click();
+    await expect(canvas).toHaveAttribute("data-chromish-background-transform", /"rotationDeg":90/u);
+    await expect(canvas).toHaveAttribute("data-chromish-background-image-ready", "true", { timeout: 20_000 });
+    await gpuPage.getByRole("button", { name: "Flip H" }).click();
+    await expect(canvas).toHaveAttribute("data-chromish-background-transform", /"flipHorizontal":true/u);
+    await expect(canvas).toHaveAttribute("data-chromish-background-image-ready", "true", { timeout: 20_000 });
+    await gpuPage.getByRole("button", { name: "Remove refraction-test.png" }).click();
+    await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
+    await expect(canvas).toHaveAttribute("data-chromish-background-image-ready", "false");
+    await gpuPage.getByRole("button", { name: "Reset controls" }).click();
+    await expect(canvas).toHaveAttribute("data-chromish-background-image", "none");
+  });
 });

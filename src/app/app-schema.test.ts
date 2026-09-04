@@ -88,14 +88,20 @@ describe("Chromish appSchema", () => {
     expect(productSections.map((section) => section.title)).toEqual([
       "SVG",
       "Geometry",
-      "Chrome",
+      "Material",
       "Motion",
+      "Environment Image",
       "Image Export",
       "Video Export",
       "Export",
     ]);
     expect(appSchema.panels.layers).toBeUndefined();
     expect(appSchema.panels.timeline?.enabled).toBe(true);
+    expect(appSchema.media.defaultAssets).toEqual([]);
+    const materialControl = appSchema.panels.controls?.sections
+      .flatMap((section) => Object.values(section.controls))
+      .find((control) => control.target === "material.type");
+    expect(materialControl?.defaultValue).toBe("chrome");
   });
 
   it("enables playback without exposing keyframe editing", () => {
@@ -124,6 +130,10 @@ describe("Chromish appSchema", () => {
     if (appSchema.persistence.storage !== "localStorage") {
       throw new Error("Chromish must persist user settings in localStorage.");
     }
+    expect(appSchema.persistence).toMatchObject({
+      key: "toolcraft:chromish:state:v1",
+      version: 3,
+    });
     expect(appSchema.persistence.include).toContain("canvas");
     expect(
       appAcceptance.find((entry) => entry.id === "persistence.reload"),

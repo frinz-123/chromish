@@ -29,15 +29,20 @@ const snapshot: ChromishRuntimeSnapshot = {
   mesh,
   parameters: {
     background: "#F7F7F5",
+    backgroundImageSize: [1632, 918],
     cameraPosition: [0.15, 0.1, 4.5],
     cameraUp: [0, 1, 0],
     exposure: 1.1,
     includeBackground: true,
+    includeBackgroundImage: true,
+    loopPhaseRadians: 0.2,
+    material: "chrome",
+    primaryColor: "#E6ECEF",
     reflectionContrast: 1.4,
     rotationRadians: 0.2,
+    secondaryColor: "#FFD429",
     roughness: 0.16,
     studioRotationRadians: 0.31,
-    tint: "#E6ECEF",
   },
   renderer: {} as ChromishRuntimeSnapshot["renderer"],
   sourceSvg: mesh.sourceSvg,
@@ -85,6 +90,20 @@ describe("Chromish delivery kits", () => {
       expect(new TextDecoder().decode(glb.subarray(0, 4))).toBe("glTF");
       const document = await new WebIO().readBinary(glb);
       expect(document.getRoot().listMeshes()).toHaveLength(1);
+      expect(document.getRoot().listMaterials()[0]?.getMetallicFactor()).toBe(1);
+      const fireZip = unzipSync(await createGlbKit({
+        ...snapshot,
+        parameters: { ...snapshot.parameters, material: "fire", secondaryColor: "#00FF00", materialSettings: [1.8, 1.5, 1, 1], objectScale: 1.3 },
+      }));
+      const fireDocument = await new WebIO().readBinary(fireZip["chromish-object.glb"]!);
+      expect(fireDocument.getRoot().listMaterials()[0]?.getEmissiveFactor()).toEqual([0, 1, 0]);
+      const firePositions = fireDocument.getRoot().listMeshes()[0]!.listPrimitives()[0]!.getAttribute("POSITION")!.getArray()!;
+      expect(firePositions[7]).toBeGreaterThan(mesh.positions[7]!);
+      expect(fireDocument.getRoot().listNodes()[0]!.getScale()).toEqual([1.3, 1.3, 1.3]);
+      const phase = snapshot.parameters.loopPhaseRadians;
+      const tongue = (0.5 + 0.5 * Math.sin(Math.sin(phase * 2) * 1.5 + phase * 4)) ** 3;
+      expect(firePositions[7]).toBeCloseTo(1 + 1.8 * (0.06 + 0.48 * tongue), 5);
+      expect(mesh.positions[7]).toBe(1);
       const embed = new TextDecoder().decode(zip["embed.html"]!);
       expect(embed).toContain("@google/model-viewer@4.3.1");
       expect(embed).toContain('rotation-per-second="-40.000000deg"');
@@ -94,7 +113,7 @@ describe("Chromish delivery kits", () => {
   });
 
   it("extracts and builds the pinned standalone vgpu project", async () => {
-    const zip = unzipSync(createVgpuKit(snapshot));
+    const zip = unzipSync(createVgpuKit({ ...snapshot, parameters: { ...snapshot.parameters, materialSettings: [1.6, 0.5, 0.3, 1.2], objectScale: 1.4, fieldOfView: 48, saturation: 0.6 } }));
     expect(Object.keys(zip)).toEqual(expect.arrayContaining([
       "README.md",
       "index.html",
@@ -109,7 +128,12 @@ describe("Chromish delivery kits", () => {
     const settings = JSON.parse(new TextDecoder().decode(zip["settings.json"]!));
     expect(packageJson.dependencies.vgpu).toBe("0.4.0");
     expect(settings).toMatchObject({ directionSign: -1, duration: 9, startAngle: -42 });
-    expect(new TextDecoder().decode(zip["src/main.ts"]!)).toContain('import "./style.css"');
+    expect(settings).toMatchObject({ materialSettings: [1.6, 0.5, 0.3, 1.2], objectScale: 1.4, fieldOfView: 48, saturation: 0.6 });
+    const mainSource = new TextDecoder().decode(zip["src/main.ts"]!);
+    expect(mainSource).toContain('import "./style.css"');
+    expect(mainSource).toContain("composeFire");
+    expect(mainSource).toContain("settings.opticalDepth");
+    expect(Object.keys(zip).some(name => name.startsWith("optical-"))).toBe(false);
 
     const root = await mkdtemp(join(process.cwd(), ".toolcraft/browser-artifacts/chromish-kit-"));
     temporaryRoots.push(root);

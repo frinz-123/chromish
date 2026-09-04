@@ -1,7 +1,9 @@
 import type { ToolcraftControlSectionSchema } from "@/toolcraft/runtime";
+import { compositionKnobs, materialKnobs, materialKnobTarget, materialNames, materialTitles } from "./customization";
 
 export const chromishTargets = {
   background: "appearance.background",
+  backgroundImage: "media.backgroundImage",
   bevel: "geometry.bevel",
   depth: "geometry.depth",
   detail: "svg.detail",
@@ -10,12 +12,14 @@ export const chromishTargets = {
   imageResolution: "export.image.resolution",
   includeBackground: "export.includeBackground",
   orbit: "view.orbit",
+  material: "material.type",
+  primaryColor: "material.primaryColor",
+  secondaryColor: "material.secondaryColor",
   reflectionContrast: "chrome.reflectionContrast",
   roughness: "chrome.roughness",
   source: "media.svgSource",
   startAngle: "motion.startAngle",
   studioRotation: "chrome.studioRotation",
-  tint: "chrome.tint",
   videoFormat: "export.video.format",
   videoResolution: "export.video.resolution",
 } as const;
@@ -113,18 +117,49 @@ export const chromishControlSections = [
   },
   {
     controls: {
-      tint: {
+      material: {
         applicability: always,
-        defaultValue: "#E6ECEF",
-        label: "Tint",
-        orderRole: "color",
-        performanceReason: "Tint updates one material uniform.",
+        defaultValue: "chrome",
+        description: "Switch between refractive, glossy, emissive, and soft sculpted finishes.",
+        label: "Finish",
+        options: [
+          { label: "Chrome", value: "chrome" },
+          { label: "Diamond", value: "diamond" },
+          { label: "Shiny plastic", value: "plastic" },
+          { label: "Glass", value: "glass" },
+          { label: "Fire", value: "fire" },
+          { label: "Playdough", value: "playdough" },
+        ],
+        orderRole: "mode",
+        performanceReason: "Material choice selects one branch in the retained fragment shader.",
         performanceRole: "responsiveness",
-        target: chromishTargets.tint,
+        target: chromishTargets.material,
+        type: "select",
+      },
+      primaryColor: {
+        applicability: { all: [{ oneOf: ["chrome", "plastic", "fire", "playdough"], target: chromishTargets.material }], mode: "conditional" },
+        defaultValue: "#E6ECEF",
+        label: "Primary",
+        orderRole: "color",
+        semanticGroup: "material-colors",
+        performanceReason: "Primary color updates one material uniform.",
+        performanceRole: "responsiveness",
+        target: chromishTargets.primaryColor,
+        type: "color",
+      },
+      secondaryColor: {
+        applicability: { all: [{ oneOf: ["plastic", "fire"], target: chromishTargets.material }], mode: "conditional" },
+        defaultValue: "#FFD429",
+        label: "Accent",
+        orderRole: "color",
+        semanticGroup: "material-colors",
+        performanceReason: "Accent color updates the plastic highlight or fire core uniform.",
+        performanceRole: "responsiveness",
+        target: chromishTargets.secondaryColor,
         type: "color",
       },
       roughness: {
-        applicability: always,
+        applicability: { all: [{ oneOf: ["chrome", "plastic", "playdough"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 0.12,
         label: "Roughness",
         max: 0.45,
@@ -138,7 +173,7 @@ export const chromishControlSections = [
         type: "slider",
       },
       reflectionContrast: {
-        applicability: always,
+        applicability: { all: [{ oneOf: ["chrome", "diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 1.25,
         label: "Reflection contrast",
         max: 2,
@@ -152,7 +187,7 @@ export const chromishControlSections = [
         type: "slider",
       },
       studioRotation: {
-        applicability: always,
+        applicability: { all: [{ oneOf: ["chrome", "diamond", "glass"], target: chromishTargets.material }], mode: "conditional" },
         defaultValue: 18,
         label: "Studio rotation",
         max: 360,
@@ -181,8 +216,27 @@ export const chromishControlSections = [
         type: "slider",
       },
     },
-    id: "chrome",
-    title: "Chrome",
+    id: "material",
+    title: "Material",
+  },
+  ...materialNames.map((material) => ({
+    id: `material-${material}`,
+    title: materialTitles[material],
+    controls: Object.fromEntries(materialKnobs[material].map((item) => [item.key, {
+      ...item, type: "slider" as const, target: materialKnobTarget(material, item.key),
+      applicability: { mode: "conditional" as const, all: [{ target: chromishTargets.material, oneOf: [material] }] },
+      performanceRole: "responsiveness" as const,
+      performanceReason: "Updates retained material uniforms; source mesh and pass count stay unchanged.",
+      sliderValueKind: "continuous" as const,
+    }])),
+  })),
+  {
+    id: "composition", title: "Composition",
+    controls: Object.fromEntries(compositionKnobs.map((item) => [item.key, {
+      ...item, type: "slider" as const, target: `composition.${item.key}`, applicability: always,
+      performanceRole: "responsiveness" as const, performanceReason: "Updates transform or grading uniforms without rebuilding geometry.",
+      sliderValueKind: "continuous" as const,
+    }])),
   },
   {
     controls: {
@@ -218,6 +272,27 @@ export const chromishControlSections = [
     },
     id: "motion",
     title: "Motion",
+  },
+  {
+    controls: {
+      backgroundImage: {
+        accept: "image/png,image/jpeg,image/webp",
+        applicability: always,
+        assetKind: "image",
+        defaultValue: null,
+        description: "Use a photo behind the object to inspect transparency, reflections, and refraction.",
+        hardMaxItems: 1,
+        label: false,
+        multiple: false,
+        orderRole: "input",
+        performanceReason: "Image replacement decodes and uploads one bounded texture outside the frame loop.",
+        performanceRole: "responsiveness",
+        target: chromishTargets.backgroundImage,
+        type: "fileDrop",
+      },
+    },
+    id: "environment-image",
+    title: "Environment Image",
   },
   {
     controls: {

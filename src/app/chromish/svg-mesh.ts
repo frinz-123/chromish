@@ -6,6 +6,8 @@ import {
 import { union, type MultiPolygon, type Pair, type Polygon } from "polygon-clipping";
 
 import { ChromishSvgError, sanitizeSvg, type SanitizedSvg } from "./svg-sanitizer";
+import { buildGemCutGeometry } from "./gem-cut";
+import { refineFireMesh } from "./fire-mesh";
 
 export const CHROMISH_MAX_TRIANGLES = 100_000;
 
@@ -20,6 +22,8 @@ export type ChromishCpuMesh = Readonly<{
   route: "raster" | "vector";
   sourceSvg: string;
   triangleCount: number;
+  gem?: ChromishCpuMesh;
+  fire?: ChromishCpuMesh;
 }>;
 
 type Point = readonly [number, number];
@@ -542,6 +546,7 @@ function geometryToMesh(
   sourceSvg: string,
   elementCount: number,
   route: ChromishCpuMesh["route"],
+  smooth = true,
 ): ChromishCpuMesh {
   const meshGeometry = geometry.index ? geometry.toNonIndexed() : geometry;
   if (meshGeometry !== geometry) geometry.dispose();
@@ -551,9 +556,11 @@ function geometryToMesh(
   // which appears as horizontal scanlines on circles and rounded paths. Scale
   // before Three's crease weld so its fixed position quantization remains much
   // finer than Chromish's normalized silhouette detail.
-  meshGeometry.scale(1_000, 1_000, 1_000);
-  toCreasedNormals(meshGeometry, Math.PI / 3);
-  meshGeometry.scale(0.001, 0.001, 0.001);
+  if (smooth) {
+    meshGeometry.scale(1_000, 1_000, 1_000);
+    toCreasedNormals(meshGeometry, Math.PI / 3);
+    meshGeometry.scale(0.001, 0.001, 0.001);
+  }
 
   meshGeometry.computeBoundingBox();
   const positions = new Float32Array(meshGeometry.getAttribute("position").array);
@@ -629,12 +636,20 @@ export function extrudeChromishPolygons(
     throw new ChromishSvgError("invalid-svg", "The SVG contours could not be combined into a mesh.");
   }
   if (geometries.length > 1) geometries.forEach((item) => item.dispose());
-  return geometryToMesh(
+  const mesh = geometryToMesh(
     geometry,
     metadata.sourceSvg,
     metadata.elementCount,
     metadata.route,
   );
+  const gemGeometry = buildGemCutGeometry(shapes, options, (pixels, size) =>
+    nestedContoursToPolygons(traceChromishAlphaEdges(pixels, size, size).map(ring => simplifyClosedContour(ring, 1.1))),
+  );
+  return {
+    ...mesh,
+    fire: refineFireMesh(mesh),
+    ...(gemGeometry ? { gem: geometryToMesh(gemGeometry, metadata.sourceSvg, metadata.elementCount, metadata.route, false) } : {}),
+  };
 }
 
 export async function buildChromishMesh(
