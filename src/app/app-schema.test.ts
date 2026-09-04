@@ -88,7 +88,7 @@ describe("Chromish appSchema", () => {
     expect(productSections.map((section) => section.title)).toEqual([
       "SVG",
       "Geometry",
-      "Chrome",
+      "Material",
       "Motion",
       "Image Export",
       "Video Export",

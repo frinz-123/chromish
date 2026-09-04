@@ -9,9 +9,18 @@ import {
   target,
 } from "vgpu/mock";
 
-import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL } from "./vgpu-renderer";
+import { CHROME_SHADER_WGSL, TONE_MAP_SHADER_WGSL, chromishMaterialIndex } from "./vgpu-renderer";
 
 describe("Chromish vgpu bindings", () => {
+  it("maps every selectable material to a stable WGSL branch", () => {
+    expect(["diamond", "plastic", "glass", "fire", "playdough"].map((material) =>
+      chromishMaterialIndex(material as Parameters<typeof chromishMaterialIndex>[0]),
+    )).toEqual([0, 1, 2, 3, 4]);
+    expect(CHROME_SHADER_WGSL).toContain("1.0 / 2.42");
+    expect(CHROME_SHADER_WGSL).toContain("1.0 / 1.52");
+    expect(CHROME_SHADER_WGSL).toContain("fireNoise");
+  });
+
   it("compiles and executes the exact HDR, depth, MSAA, and tone-map passes", async () => {
     const gpu = await init({ label: "chromish-mock" });
     const hdr = target(gpu, { depth: true, format: "rgba16float", msaa: 4, size: [32, 24] });
@@ -36,6 +45,7 @@ describe("Chromish vgpu bindings", () => {
         cameraPosition: [0, 0, 4.5, 1],
         controls: [1.25, 0.31, 0, 0],
         model: identity,
+        secondaryColor: [1, 0.65, 0.02, 1],
         tile: [0, 0, 1, 1],
         tintRoughness: [0.79, 0.84, 0.86, 0.12],
         viewProjection: identity,

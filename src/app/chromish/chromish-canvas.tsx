@@ -152,7 +152,9 @@ export function ChromishCanvas(): React.JSX.Element {
   const detail = stringValue(useToolcraftValue(chromishTargets.detail), "fine") as ChromishDetail;
   const depth = numeric(useToolcraftValue(chromishTargets.depth), 0.24);
   const bevel = numeric(useToolcraftValue(chromishTargets.bevel), 0.04);
-  const tint = stringValue(useToolcraftValue(chromishTargets.tint), "#E6ECEF");
+  const material = stringValue(useToolcraftValue(chromishTargets.material), "diamond") as ChromishRenderParameters["material"];
+  const primaryColor = stringValue(useToolcraftValue(chromishTargets.primaryColor), "#FF5A4F");
+  const secondaryColor = stringValue(useToolcraftValue(chromishTargets.secondaryColor), "#FFD429");
   const roughness = numeric(useToolcraftValue(chromishTargets.roughness), 0.12);
   const reflectionContrast = numeric(useToolcraftValue(chromishTargets.reflectionContrast), 1.25);
   const studioRotation = numeric(useToolcraftValue(chromishTargets.studioRotation), 18);
@@ -180,12 +182,14 @@ export function ChromishCanvas(): React.JSX.Element {
     cameraUp: safeCameraVector(orbit.up, [0, 1, 0]),
     exposure,
     includeBackground,
+    material,
+    primaryColor,
     reflectionContrast,
     roughness,
     rotationRadians,
+    secondaryColor,
     studioRotationRadians: (studioRotation * Math.PI) / 180,
-    tint,
-  }), [background, exposure, includeBackground, orbit.position, orbit.up, reflectionContrast, roughness, rotationRadians, studioRotation, tint]);
+  }), [background, exposure, includeBackground, material, orbit.position, orbit.up, primaryColor, reflectionContrast, roughness, rotationRadians, secondaryColor, studioRotation]);
   parametersRef.current = parameters;
 
   React.useEffect(() => {
@@ -319,7 +323,7 @@ export function ChromishCanvas(): React.JSX.Element {
     >
       <canvas
         {...orbitHandlers}
-        aria-label="Rotating chrome SVG preview"
+        aria-label={`Rotating ${material} SVG preview`}
         className="block h-full w-full touch-none"
         height={backingHeight}
         data-canvas-model-layer="chromish-object"
@@ -333,6 +337,7 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-direction={direction}
         data-chromish-exposure={exposure}
         data-chromish-include-background={includeBackground ? "true" : "false"}
+        data-chromish-material={material}
         data-chromish-mesh-route={mesh?.route ?? "empty"}
         data-chromish-reflection-contrast={reflectionContrast}
         data-chromish-renderer-ready={renderer && !gpuUnavailable ? "true" : "false"}
@@ -340,7 +345,8 @@ export function ChromishCanvas(): React.JSX.Element {
         data-chromish-roughness={roughness}
         data-chromish-start-angle={startAngle}
         data-chromish-studio-rotation={studioRotation}
-        data-chromish-tint={tint}
+        data-chromish-primary-color={primaryColor}
+        data-chromish-secondary-color={secondaryColor}
         data-chromish-triangle-count={mesh?.triangleCount ?? 0}
         data-timeline-progress={loopProgress.toFixed(6)}
         data-toolcraft-canvas-render-scale-backing=""

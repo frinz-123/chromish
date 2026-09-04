@@ -4,7 +4,7 @@
 
 Mode: product
 
-Chromish is an SVG-to-chrome Toolcraft product with a retained vgpu renderer, a seven-second playback timeline, runtime-owned image/video export, and downloadable GLB/vgpu kits.
+Chromish is an SVG-to-material Toolcraft product with a retained vgpu renderer, five selectable finishes, a seven-second playback timeline, runtime-owned image/video export, and downloadable GLB/vgpu kits.
 
 The first product delivery uses `npm run verify:delivery`. Later feature work uses focused acceptance. A localized performance complaint may authorize one targeted iteration; only exact request authority permits measured targeted performance. A complete performance audit remains separately user-authorized through `npm run verify:perf`.
 
@@ -42,7 +42,7 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 
 ### Controls
 
-- Decision: Use built-in Toolcraft controls grouped by SVG, geometry, chrome, motion, background, image export, and video export entities.
+- Decision: Use built-in Toolcraft controls grouped by SVG, geometry, material, motion, background, image export, and video export entities; material-specific colors and optical parameters appear only for applicable finishes.
 - Reason: Every requested setting maps directly to runtime state and visible product output without custom control UI.
 - Evidence: `src/app/chromish/control-sections.ts` and `appControlSectionInventory`.
 
@@ -95,6 +95,24 @@ The first product delivery uses `npm run verify:delivery`. Later feature work us
 - Performance intent: ordinary-product-work; this is visual-correctness work and does not authorize measured performance.
 - Verification: Focused mesh-normal unit test, TypeScript, `renderer.chrome` feature acceptance, WGSL validation, production build, and deployed-site smoke check.
 - Risks: Deliberately sharp corners remain split above the crease angle; very low-poly source silhouettes still preserve their authored polygonal outline.
+
+### Delivery 3 — Switchable procedural materials
+
+- Request: Add diamond with transparency and refraction, colorable shiny plastic, glass, fire, and playdough while continuing to use Vercel's vgpu.
+- Task type: Later Tier 3 schema, conditional controls, retained WebGPU shader, portable kit, acceptance, and browser feature work.
+- User-visible result: The Material section now switches the uploaded extrusion among five distinct finishes; only plastic, fire, and playdough expose useful colors, while optical controls remain focused on diamond and glass.
+- Source/reference checked: The five supplied material reference images, current Chromish renderer structure, Toolcraft workflow/contracts, and the installed vgpu skill.
+- Reference inputs: The prompt images are static visual direction for clear diamond/glass, glossy warm plastic, emissive fire, and soft rounded playdough; they introduce no motion-reference preprocessing requirement.
+- Docs/contracts read: `workflow.md`, `core/control-selection.md`, `core/layout.md`, `core/runtime-boundary.md`, `core/performance.md`, `schema-reference.md`, `component-rules.md`, `renderer-technique.md`, `performance.md`, and `acceptance-testing.md`.
+- Contract rules applied: controls-product-coverage, controls-section-inventory-required, interaction-surface-ownership, renderer-technique-inventory, renderer-view-interaction, acceptance-product-observable, persistence-policy-explicit, and workflow-required.
+- View interaction intent: Orbit remains unchanged and every finish consumes the same camera pose, geometry, hit test, preview, and export framing.
+- Interaction ownership: The panel exclusively owns finish and material-property selection; canvas drag remains the complementary spatial orbit operation.
+- Decision: Keep one retained vgpu draw pipeline and select five WGSL branches with uniforms. Diamond uses IOR 2.42 dispersion and Fresnel transparency; glass uses IOR 1.52 refraction; plastic uses colorable diffuse/specular shading; fire uses timeline-coherent emissive turbulence; playdough uses wrapped diffuse and broad soft highlights.
+- Alternatives rejected: Separate renderer instances or pipelines per finish, texture downloads, custom material UI, always-visible irrelevant colors, WebGL/Three rendering, and duplicating material selection on the canvas.
+- State/output mapping: `material.type`, primary/accent colors, roughness, reflection contrast, studio rotation, exposure, timeline phase, and orbit pose feed retained shader uniforms shared by preview and runtime export; GLB maps the selected finish to a portable physical-material approximation and the vgpu kit preserves the exact shader branch.
+- Performance intent: ordinary-product-work; the material selector changes a constant-cost shader branch and does not authorize measured performance.
+- Verification: Focused schema/product, vgpu mock, kit, typecheck, code-health, feature-browser, and screenshot checks only; the existing initial delivery receipt is not rerun.
+- Risks: Procedural refraction samples the studio environment rather than screen-space scene geometry, and portable GLB cannot reproduce the exact fire turbulence or diamond dispersion.
 
 ## Evidence
 

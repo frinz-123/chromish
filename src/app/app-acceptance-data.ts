@@ -107,8 +107,8 @@ export const appProductReadiness: ToolcraftProductReadiness = {
   ],
   mode: "product",
   productName: "Chromish",
-  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled procedural-chrome WebGPU object.",
-  requestedBehavior: "Import an SVG, orbit and tune its chrome extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
+  productSummary: "Converts one sanitized SVG alpha silhouette into a beveled WebGPU object with five switchable procedural materials.",
+  requestedBehavior: "Import an SVG, choose diamond, shiny plastic, glass, fire, or playdough, orbit the extrusion, play a seamless seven-second rotation, and export images, video, GLB, or a full-fidelity vgpu kit.",
   viewInteraction: {
     mode: "orbit",
     orientationTargets: [chromishTargets.orbit],
@@ -177,7 +177,16 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
     target: chromishTargets.orbit,
     userAction: "Drag a gizmo axis, snap an axis, drag the object, drag a canvas miss, then undo and reset.",
   },
-  control(chromishTargets.tint, "color"),
+  control(chromishTargets.material, "select", {
+    expectedObservable: "Each of Diamond, Shiny plastic, Glass, Fire, and Playdough produces a distinct visible vgpu finish.",
+    optionCoverage: ["diamond", "plastic", "glass", "fire", "playdough"],
+  }),
+  control(chromishTargets.primaryColor, "color", {
+    expectedObservable: "Primary changes the visible body color for plastic, fire, and playdough while remaining absent for diamond and glass.",
+  }),
+  control(chromishTargets.secondaryColor, "color", {
+    expectedObservable: "Accent changes the visible highlight for plastic and fire while remaining absent for other materials.",
+  }),
   control(chromishTargets.roughness, "slider"),
   control(chromishTargets.reflectionContrast, "slider"),
   control(chromishTargets.studioRotation, "slider"),
@@ -340,7 +349,7 @@ export const appAcceptance: readonly ToolcraftComponentAcceptance[] = [
 export const appControlSectionInventory: readonly ToolcraftControlSectionInventoryEntry[] = [
   { entity: "SVG source", entityId: "svg", groupingReason: "Import admission and silhouette detail are the first workflow stage.", id: "svg", targets: [chromishTargets.source, chromishTargets.detail], title: "SVG", workflowStage: "source" },
   { entity: "Chrome geometry", entityId: "geometry", groupingReason: "Depth, bevel, and shared orbit pose describe the extruded object.", id: "geometry", targets: [chromishTargets.depth, chromishTargets.bevel, chromishTargets.orbit], title: "Geometry", workflowStage: "shape" },
-  { entity: "Chrome material", entityId: "chrome", groupingReason: "Five shader parameters tune one procedural chrome material.", id: "chrome", targets: [chromishTargets.tint, chromishTargets.roughness, chromishTargets.reflectionContrast, chromishTargets.studioRotation, "chrome.exposure"], title: "Chrome", workflowStage: "appearance" },
+  { entity: "Object material", entityId: "material", groupingReason: "The selector and applicable colors or optical parameters tune one procedural material.", id: "material", targets: [chromishTargets.material, chromishTargets.primaryColor, chromishTargets.secondaryColor, chromishTargets.roughness, chromishTargets.reflectionContrast, chromishTargets.studioRotation, "chrome.exposure"], title: "Material", workflowStage: "appearance" },
   { entity: "Rotation motion", entityId: "motion", groupingReason: "Direction and start angle modify the Toolcraft timeline cycle.", id: "motion", targets: [chromishTargets.direction, chromishTargets.startAngle], title: "Motion", workflowStage: "animation" },
   { entity: "Canvas background", entityId: "background", groupingReason: "Background inclusion and color jointly define preview and export compositing.", id: "background", targets: [chromishTargets.includeBackground, chromishTargets.background], title: "Background", workflowStage: "appearance" },
   { entity: "Image delivery", entityId: "image-export", groupingReason: "Image format and long-edge resolution configure runtime-owned image export.", id: "image-export", targets: [chromishTargets.imageFormat, chromishTargets.imageResolution], title: "Image Export", workflowStage: "delivery" },

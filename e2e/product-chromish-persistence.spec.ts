@@ -75,7 +75,8 @@ test("browser: chromish restores canvas media panels timeline and values after r
     height: (root.querySelector('[data-toolcraft-control-target="canvas.size.height"] input') as HTMLInputElement | null)?.value ?? "missing",
     route: (root.querySelector("[data-chromish-mesh-route]") as HTMLElement | null)?.dataset.chromishMeshRoute ?? "missing",
     timelineExpanded: root.querySelector('[data-toolcraft-control-target="panels.timeline.extended"] [role="switch"]')?.getAttribute("aria-checked") ?? "missing",
-    tint: (root.querySelector('[data-toolcraft-control-target="chrome.tint"] input[type="text"]') as HTMLInputElement | null)?.value ?? "missing",
+    material: (root.querySelector('[data-chromish-material]') as HTMLElement | null)?.dataset.chromishMaterial ?? "missing",
+    primaryColor: (root.querySelector('[data-toolcraft-control-target="material.primaryColor"] input[type="text"]') as HTMLInputElement | null)?.value ?? "missing",
     width: (root.querySelector('[data-toolcraft-control-target="canvas.size.width"] input') as HTMLInputElement | null)?.value ?? "missing",
   }));
   const expected = {
@@ -84,7 +85,8 @@ test("browser: chromish restores canvas media panels timeline and values after r
     height: "550",
     route: "vector",
     timelineExpanded: "true",
-    tint: "#B8D7E8",
+    material: "plastic",
+    primaryColor: "#B8D7E8",
     width: "880",
   };
   await expectToolcraftPersistenceState(
@@ -92,7 +94,8 @@ test("browser: chromish restores canvas media panels timeline and values after r
     session.targetAction("canvas.size.width", async (current) => {
       await uploadVectorSvg(current);
       await setCanvasSize(current, 880, 550);
-      await setColor(current, "chrome.tint", "#B8D7E8");
+      await chooseSelect(current, "material.type", "plastic");
+      await setColor(current, "material.primaryColor", "#B8D7E8");
       await setTimelineDuration(current, "2s");
       await pauseTimeline(current);
       await current.getByRole("slider", { name: "Playback position" }).press("End");

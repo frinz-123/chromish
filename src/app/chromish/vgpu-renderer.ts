@@ -27,6 +27,7 @@ struct SceneUniforms {
   viewProjection: mat4x4f,
   model: mat4x4f,
   tintRoughness: vec4f,
+  secondaryColor: vec4f,
   controls: vec4f,
   cameraPosition: vec4f,
   tile: vec4f,
@@ -76,6 +77,13 @@ fn studio(r: vec3f, contrast: f32, angle: f32) -> vec3f {
   return vec3f(value) * vec3f(0.94, 0.99, 1.03);
 }
 
+fn fireNoise(position: vec3f, time: f32) -> f32 {
+  let p = position * vec3f(5.0, 3.5, 4.0);
+  let first = sin(p.x + time * 4.1) * sin(p.y * 1.7 - time * 3.3);
+  let second = sin(p.z * 2.3 - p.y * 1.2 + time * 5.7);
+  return 0.5 + 0.25 * first + 0.25 * second;
+}
+
 @fragment fn fs_main(input: VertexOutput) -> @location(0) vec4f {
   let n = normalize(input.worldNormal);
   let v = normalize(scene.cameraPosition.xyz - input.worldPosition);
@@ -84,12 +92,42 @@ fn studio(r: vec3f, contrast: f32, angle: f32) -> vec3f {
   let contrast = scene.controls.x;
   let studioAngle = scene.controls.y;
   let tint = scene.tintRoughness.xyz;
+  let accent = scene.secondaryColor.xyz;
+  let material = scene.controls.z;
+  let time = scene.controls.w;
   let environment = studio(reflected, contrast, studioAngle);
   let fresnel = pow(1.0 - max(dot(n, v), 0.0), 5.0);
-  let softened = mix(environment, vec3f(dot(environment, vec3f(0.2126, 0.7152, 0.0722))), roughness * 0.72);
-  let metal = softened * tint * mix(0.76, 1.34, fresnel);
-  let rim = fresnel * (1.2 - roughness) * tint;
-  return vec4f(metal + rim, 1.0);
+  if (material < 0.5) {
+    let refracted = refract(-v, n, 1.0 / 2.42);
+    let dispersion = vec3f(
+      studio(rotateY(refracted, -0.035), contrast, studioAngle).r,
+      studio(refracted, contrast, studioAngle).g,
+      studio(rotateY(refracted, 0.035), contrast, studioAngle).b
+    );
+    let brilliance = pow(max(dot(reflect(-v, n), normalize(vec3f(-0.4, 0.8, 0.5))), 0.0), 42.0);
+    return vec4f(dispersion * 0.48 + environment * fresnel * 1.45 + brilliance * vec3f(4.0), 0.3 + fresnel * 0.68);
+  }
+  if (material < 1.5) {
+    let light = normalize(vec3f(-0.45, 0.75, 0.6));
+    let diffuse = 0.24 + max(dot(n, light), 0.0) * 0.76;
+    let highlight = pow(max(dot(reflect(-light, n), v), 0.0), mix(96.0, 18.0, roughness));
+    return vec4f(tint * diffuse + accent * highlight * 1.8 + fresnel * accent * 0.35, 1.0);
+  }
+  if (material < 2.5) {
+    let refracted = refract(-v, n, 1.0 / 1.52);
+    let glassBody = studio(refracted, contrast * 0.75, studioAngle) * vec3f(0.7, 0.9, 1.0);
+    return vec4f(glassBody * 0.22 + environment * fresnel * 1.1 + vec3f(0.04, 0.08, 0.1), 0.16 + fresnel * 0.72);
+  }
+  if (material < 3.5) {
+    let turbulence = fireNoise(input.worldPosition, time);
+    let heightGlow = clamp(input.worldPosition.y * 0.35 + 0.58, 0.0, 1.0);
+    let flame = smoothstep(0.18, 0.88, turbulence + heightGlow * 0.35);
+    return vec4f(mix(tint, accent, flame) * (1.5 + flame * 2.2) + fresnel * accent, 0.9);
+  }
+  let light = normalize(vec3f(-0.35, 0.8, 0.45));
+  let wrap = clamp((dot(n, light) + 0.45) / 1.45, 0.0, 1.0);
+  let softSpecular = pow(max(dot(reflect(-light, n), v), 0.0), 12.0) * (1.0 - roughness);
+  return vec4f(tint * (0.42 + wrap * 0.72) + softSpecular * vec3f(0.35) + fresnel * tint * 0.2, 1.0);
 }
 `;
 
@@ -130,12 +168,18 @@ export type ChromishRenderParameters = Readonly<{
   cameraUp: readonly [number, number, number];
   exposure: number;
   includeBackground: boolean;
+  material: "diamond" | "plastic" | "glass" | "fire" | "playdough";
+  primaryColor: string;
   reflectionContrast: number;
   roughness: number;
   rotationRadians: number;
+  secondaryColor: string;
   studioRotationRadians: number;
-  tint: string;
 }>;
+
+export function chromishMaterialIndex(material: ChromishRenderParameters["material"]): number {
+  return { diamond: 0, plastic: 1, glass: 2, fire: 3, playdough: 4 }[material];
+}
 
 function hexToLinearRgba(value: string): [number, number, number, number] {
   const match = /^#?([0-9a-f]{6})$/iu.exec(value);
@@ -291,10 +335,11 @@ export class ChromishVgpuRenderer {
     this.chromeDraw?.set({
       scene: {
         cameraPosition: [...camera.position.toArray(), 1],
-        controls: [parameters.reflectionContrast, parameters.studioRotationRadians, 0, 0],
+        controls: [parameters.reflectionContrast, parameters.studioRotationRadians, chromishMaterialIndex(parameters.material), parameters.rotationRadians],
         model: new Float32Array(model.elements),
         tile,
-        tintRoughness: [...hexToLinearRgba(parameters.tint).slice(0, 3), parameters.roughness],
+        secondaryColor: hexToLinearRgba(parameters.secondaryColor),
+        tintRoughness: [...hexToLinearRgba(parameters.primaryColor).slice(0, 3), parameters.roughness],
         viewProjection: new Float32Array(viewProjection.elements),
       },
     });

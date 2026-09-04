@@ -27,9 +27,9 @@ export const appSchema = defineToolcraft({
   },
   persistence: {
     include: ["canvas", "media", "panels", "timeline", "values"],
-    key: "toolcraft:chromish:state:v1",
+    key: "toolcraft:chromish:state:v2",
     storage: "localStorage",
-    version: 1,
+    version: 2,
   },
   settingsTransfer: {
     enabled: "auto",

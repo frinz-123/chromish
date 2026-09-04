@@ -3,7 +3,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   Mesh,
-  MeshStandardMaterial,
+  MeshPhysicalMaterial,
 } from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 
@@ -108,9 +108,21 @@ function buildThreeGeometry(mesh: ChromishCpuMesh): BufferGeometry {
   return geometry;
 }
 
-async function createGlb(mesh: ChromishCpuMesh, tint: string, roughness: number): Promise<Uint8Array> {
+async function createGlb(mesh: ChromishCpuMesh, parameters: ChromishRuntimeSnapshot["parameters"]): Promise<Uint8Array> {
   const geometry = buildThreeGeometry(mesh);
-  const material = new MeshStandardMaterial({ color: tint, metalness: 1, roughness });
+  const transmissive = parameters.material === "diamond" || parameters.material === "glass";
+  const material = new MeshPhysicalMaterial({
+    color: transmissive ? "#EAF7FF" : parameters.primaryColor,
+    emissive: parameters.material === "fire" ? parameters.primaryColor : "#000000",
+    emissiveIntensity: parameters.material === "fire" ? 2 : 0,
+    ior: parameters.material === "diamond" ? 2.42 : 1.52,
+    metalness: 0,
+    opacity: transmissive ? 0.38 : 1,
+    roughness: parameters.material === "playdough" ? Math.max(0.55, parameters.roughness) : parameters.roughness,
+    thickness: transmissive ? 0.35 : 0,
+    transmission: transmissive ? 1 : 0,
+    transparent: transmissive,
+  });
   const object = new Mesh(geometry, material);
   object.name = "Chromish Object";
   try {
@@ -149,11 +161,11 @@ export async function createGlbKit(
 ): Promise<Uint8Array> {
   const snapshot = snapshotOverride ?? getChromishRuntimeSnapshot();
   if (!snapshot) throw new Error("Upload a valid SVG before downloading a GLB kit.");
-  const glb = await createGlb(snapshot.mesh, snapshot.parameters.tint, snapshot.parameters.roughness);
+  const glb = await createGlb(snapshot.mesh, snapshot.parameters);
   const duration = snapshot.durationSeconds;
   const counterclockwise = snapshot.directionSign < 0;
   return zipSync({
-    "README.md": strToU8(`# Chromish GLB Kit\n\nOpen \`embed.html\` through a local web server. The standard metallic PBR material is portable and intentionally approximates the procedural vgpu chrome. The embedded model-viewer version is pinned to 4.3.1.\n`),
+    "README.md": strToU8(`# Chromish GLB Kit\n\nOpen \`embed.html\` through a local web server. The standard physical PBR material is portable and approximates the selected procedural vgpu material. The embedded model-viewer version is pinned to 4.3.1.\n`),
     "chromish-object.glb": glb,
     "embed.html": strToU8(glbEmbedHtml(duration, counterclockwise)),
     [safeSourceName(snapshot.fileName)]: strToU8(snapshot.sourceSvg),
@@ -225,7 +237,7 @@ function render(time) {
   if (!dragging) yaw = settings.startAngle * Math.PI / 180 + settings.directionSign * (time / (settings.duration * 1000)) * Math.PI * 2;
   const c = Math.cos(yaw), s = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const model = new Float32Array([c,sp*s,-cp*s,0,0,cp,sp,0,s,-sp*c,cp*c,0,0,0,0,1]);
-  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.tintLinear, settings.roughness], controls: [settings.reflectionContrast, settings.studioRotation, 0, 0], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
+  chrome.set({ scene: { viewProjection: cameraMatrix(), model, tintRoughness: [...settings.primaryColorLinear, settings.roughness], secondaryColor: [...settings.secondaryColorLinear, 1], controls: [settings.reflectionContrast, settings.studioRotation, settings.materialIndex, time / 1000], cameraPosition: [0,0,4.5,1], tile: [0,0,1,1] } });
   present.set({ tone: { background: [...settings.backgroundLinear, 1], exposureAndMode: [settings.exposure, 1, 0, 0] } });
   frame(gpu, current => { current.pass({ target: hdr, clear: [0,0,0,0], clearDepth: 1 }, chrome); current.pass(out, present); });
   requestAnimationFrame(render);
@@ -248,15 +260,19 @@ export function createVgpuKit(snapshotOverride?: ChromishRuntimeSnapshot): Uint8
     directionSign: snapshot.directionSign,
     duration: snapshot.durationSeconds,
     exposure: snapshot.parameters.exposure,
+    material: snapshot.parameters.material,
+    materialIndex: { diamond: 0, plastic: 1, glass: 2, fire: 3, playdough: 4 }[snapshot.parameters.material],
+    primaryColor: snapshot.parameters.primaryColor,
+    primaryColorLinear: linearHex(snapshot.parameters.primaryColor),
     reflectionContrast: snapshot.parameters.reflectionContrast,
     roughness: snapshot.parameters.roughness,
+    secondaryColor: snapshot.parameters.secondaryColor,
+    secondaryColorLinear: linearHex(snapshot.parameters.secondaryColor),
     startAngle: snapshot.startAngleDegrees,
     studioRotation: snapshot.parameters.studioRotationRadians,
-    tint: snapshot.parameters.tint,
-    tintLinear: linearHex(snapshot.parameters.tint),
   };
   return zipSync({
-    "README.md": strToU8("# Chromish vgpu Kit\n\nRun `npm install` and `npm run dev`. Build with `npm run build` and host the `dist` directory on any static host. Embed with an iframe pointing at the hosted URL. The renderer and inline WGSL reproduce Chromish's procedural chrome; `object.chrmesh` uses the little-endian CHRMSH01 layout.\n"),
+    "README.md": strToU8("# Chromish vgpu Kit\n\nRun `npm install` and `npm run dev`. Build with `npm run build` and host the `dist` directory on any static host. Embed with an iframe pointing at the hosted URL. The renderer and inline WGSL reproduce the selected Chromish material; `object.chrmesh` uses the little-endian CHRMSH01 layout.\n"),
     "index.html": strToU8("<div id=app><canvas aria-label='Chromish chrome object'></canvas></div><script type=module src=/src/main.ts></script>"),
     "object.chrmesh": serializeChrmesh(snapshot.mesh),
     "package.json": strToU8(JSON.stringify({ private: true, scripts: { build: "vite build", dev: "vite" }, dependencies: { vgpu: "0.4.0" }, devDependencies: { typescript: "6.0.3", vite: "8.0.0" } }, null, 2)),

@@ -27,10 +27,12 @@ export function getChromishExportParameters(
     cameraUp: safeCameraVector(orbit.up, [0, 1, 0]),
     exposure: numberValue(state, "chrome.exposure", 1),
     includeBackground: state.values[chromishTargets.includeBackground] !== false,
+    material: stringValue(state, chromishTargets.material, "diamond") as ChromishRenderParameters["material"],
+    primaryColor: stringValue(state, chromishTargets.primaryColor, "#FF5A4F"),
     reflectionContrast: numberValue(state, chromishTargets.reflectionContrast, 1.25),
     roughness: numberValue(state, chromishTargets.roughness, 0.12),
     rotationRadians: (startAngle * Math.PI) / 180 + direction * timelineProgress * Math.PI * 2,
+    secondaryColor: stringValue(state, chromishTargets.secondaryColor, "#FFD429"),
     studioRotationRadians: (numberValue(state, chromishTargets.studioRotation, 18) * Math.PI) / 180,
-    tint: stringValue(state, chromishTargets.tint, "#E6ECEF"),
   };
 }

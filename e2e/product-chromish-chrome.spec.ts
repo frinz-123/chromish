@@ -75,6 +75,7 @@ for (const [testName, target, outputAttribute] of [
   test(testName, async ({ page }) => {
     await openChromish(page);
     await uploadVectorSvg(page);
+    if (target === "chrome.roughness") await chooseSelect(page, "material.type", "plastic");
     const canvas = page.locator(canvasSelector);
     const before = await canvas.getAttribute(outputAttribute);
     await changeSlider(page, target);
@@ -85,15 +86,32 @@ for (const [testName, target, outputAttribute] of [
   });
 }
 
-test("browser: chromish chrome.tint", async ({ page }) => {
+test("browser: chromish material.type", async ({ page }) => {
   await openChromish(page);
   await uploadVectorSvg(page);
-  await setColor(page, "chrome.tint", "#B8D7E8");
-  await expect(page.locator(canvasSelector)).toHaveAttribute("data-chromish-tint", "#B8D7E8");
-  await proveControlChange(page, "chrome.tint", "chrome.tint", async (field) => {
-    const input = field.locator('input[type="text"]');
-    await input.fill("#D9E4EA");
-    await input.press("Enter");
+  for (const material of ["plastic", "glass", "fire", "playdough", "diamond"] as const) {
+    await chooseSelect(page, "material.type", material);
+    await expect(page.locator(canvasSelector)).toHaveAttribute("data-chromish-material", material);
+  }
+  await proveControlChange(page, "material.type", "material.type", async () => {
+    await chooseSelect(page, "material.type", "glass");
   });
 });
 
+for (const [testName, target, mode, color, attribute] of [
+  ["browser: chromish material.primaryColor", "material.primaryColor", "plastic", "#B8D7E8", "data-chromish-primary-color"],
+  ["browser: chromish material.secondaryColor", "material.secondaryColor", "fire", "#FFF06A", "data-chromish-secondary-color"],
+] as const) {
+  test(testName, async ({ page }) => {
+    await openChromish(page);
+    await uploadVectorSvg(page);
+    await chooseSelect(page, "material.type", mode);
+    await setColor(page, target, color);
+    await expect(page.locator(canvasSelector)).toHaveAttribute(attribute, color);
+    await proveControlChange(page, target, target, async (field) => {
+    const input = field.locator('input[type="text"]');
+    await input.fill("#D9E4EA");
+    await input.press("Enter");
+    });
+  });
+}
